@@ -15,9 +15,8 @@ const Index = () => {
         <h1 className="text-6xl font-bold">
             <span className="span-gradient-text">Cover Letter Generator</span>
           </h1>       
-             <p className="text-muted-foreground max-w-lg text-white ">
-            Upload your CV and provide a job posting URL to generate a tailored cover letter
-          </p>
+             <p className="text-muted-foreground text-center max-w-lg text-white ">Upload your CV and provide a job posting URL to generate a tailored cover letter
+ </p>
         </div>
 
        
