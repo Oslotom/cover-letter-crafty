@@ -28,7 +28,7 @@ export const CoverLetterGenerator = ({ cvContent, jobContent }: CoverLetterGener
 
     setIsGenerating(true);
     try {
-      const hf = new HfInference(process.env.HUGGING_FACE_API_KEY);
+      const hf = new HfInference("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");
       const prompt = `Generate a professional cover letter based on the following CV and job description.
       
 CV:
