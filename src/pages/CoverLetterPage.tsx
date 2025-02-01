@@ -7,19 +7,26 @@ const CoverLetterPage = () => {
   const coverLetter = location.state?.coverLetter;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <Card className="max-w-2xl w-full p-6">
-        <CardHeader>
-          <CardTitle>Generated Cover Letter</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {coverLetter ? (
-            <pre className="whitespace-pre-wrap">{coverLetter}</pre>
-          ) : (
-            <p>No cover letter content available. Please generate a cover letter first.</p>
-          )}
-        </CardContent>
-      </Card>
+    <div className="min-h-screen py-8 bg-gradient-to-b from-[#1a242f] to-[#222f3a]">
+      <div className="container max-w-2xl mx-auto space-y-16 pt-16 p-8">
+        <div className="text-center space-y-6">
+          <h1 className="text-6xl font-bold">
+            <span className="span-gradient-text">Generated Cover Letter</span>
+          </h1>
+          <p className="text-muted-foreground max-w-lg text-white">
+            Below is your generated cover letter. Please review it.
+          </p>
+        </div>
+        <Card className="p-6">
+          <CardContent>
+            {coverLetter ? (
+              <pre className="whitespace-pre-wrap">{coverLetter}</pre>
+            ) : (
+              <p>No cover letter content available. Please generate a cover letter first.</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
