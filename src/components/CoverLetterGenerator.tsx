@@ -40,7 +40,7 @@ export const CoverLetterGenerator = ({ cvContent, jobContent }: CoverLetterGener
       const truncatedCV = truncateText(cvContent);
       const truncatedJob = truncateText(jobContent);
       
-      const prompt = `Generate a professional cover letter (max 300 words) based on this CV and job description:
+      const prompt = `Create a concise and professional cover letter (max 300 words) based on the following CV and job description.  Focus on matching the skills and experience in the CV to the specific requirements of the job description. Start the cover letter directly with "Dear Hiring Manager,". Output ONLY the cover letter text.
 
 CV Summary:
 ${truncatedCV}
@@ -48,16 +48,16 @@ ${truncatedCV}
 Job Summary:
 ${truncatedJob}
 
-Write a concise cover letter that matches the CV skills to job requirements. Include: introduction, relevant experience, why you're a good fit, and call to action.`;
+. `;
 
       const response = await hf.textGeneration({
         model: 'mistralai/Mistral-7B-Instruct-v0.2',
         inputs: prompt,
         parameters: {
           max_new_tokens: 400,
-          temperature: 0.8,
+          temperature: 0.7,
           top_p: 0.9,
-          repetition_penalty: 1.3,
+          repetition_penalty: 1.1,
         },
       });
 

@@ -71,7 +71,7 @@ export const UrlInput = ({ onUrlContent }: UrlInputProps) => {
           placeholder="Enter job posting URL"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          style={{ width: '100%',  height: '70px', paddingRight: '40px'   }} // Adjust padding as needed
+          style={{ borderRadius: '15px', width: '100%',  height: '70px', paddingRight: '40px'}} // Adjust padding as needed
         />
         <Button
           type="submit"
@@ -81,10 +81,10 @@ export const UrlInput = ({ onUrlContent }: UrlInputProps) => {
             top: 0,
             bottom: 0,
             right: 0,
-            padding: '8px 20px', // Adjust padding as needed
-            margin: '14px',
-            height: '44px',
-           
+            padding: '0px 35px', // Adjust padding as needed
+            margin: '6px',
+            height: '60px',
+            borderRadius: '15px',
             background: 'linear-gradient(to right, rgb(64, 160, 255), rgb(143, 80, 255))',
                     }}
         >
