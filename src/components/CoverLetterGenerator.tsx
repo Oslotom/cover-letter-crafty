@@ -54,10 +54,10 @@ Write a concise cover letter that matches the CV skills to job requirements. Inc
         model: 'mistralai/Mistral-7B-Instruct-v0.2',
         inputs: prompt,
         parameters: {
-          max_new_tokens: 300,
-          temperature: 0.7,
+          max_new_tokens: 400,
+          temperature: 0.8,
           top_p: 0.9,
-          repetition_penalty: 1.2,
+          repetition_penalty: 1.3,
         },
       });
 
@@ -112,7 +112,7 @@ Write a concise cover letter that matches the CV skills to job requirements. Inc
       <Button
         onClick={generateCoverLetter}
         disabled={isGenerating || !cvContent || !jobContent}
-        className="w-full"
+        className="w-full min-h-[60px] "
       >
         {isGenerating ? (
           <>
@@ -129,7 +129,7 @@ Write a concise cover letter that matches the CV skills to job requirements. Inc
           <Textarea
             value={coverLetter}
             onChange={(e) => setCoverLetter(e.target.value)}
-            className="min-h-[400px] font-serif"
+            className="min-h-[650px] font-serif"
           />
         </Card>
       )}
