@@ -15,23 +15,16 @@ const Index = () => {
         <h1 className="text-6xl font-bold">
             <span className="span-gradient-text">Free AI cover letter generator</span>
           </h1>       
-             <p className="text-muted-foreground max-w-lg text-white ">Upload your resume and provide a job posting URL to generate a tailored cover letter
-          </p>
+             <p className="container max-w-2xl mx-auto text-muted-foreground max-w-lg text-white ">Upload your resume and provide a job posting URL to generate a tailored cover letter</p>
         </div>
-
-       
-
-          <div className="space-y-2">
-        
+          <div className="space-y-16">
             <UrlInput onUrlContent={setJobContent} />
           </div>
-
           <div className="grid gap-8">
-          <div className="space-y-4">
+          <div className="space-y-6">
             <FileUpload onFileContent={setCvContent} />
           </div>
-
-          <div className="space-y-2">
+          <div className="space-y-6 ">
             <CoverLetterGenerator
               cvContent={cvContent}
               jobContent={jobContent}
