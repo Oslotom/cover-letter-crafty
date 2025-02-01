@@ -54,7 +54,7 @@ ${truncatedJob}
         model: 'mistralai/Mistral-7B-Instruct-v0.2',
         inputs: prompt,
         parameters: {
-          max_new_tokens: 400,
+          max_new_tokens: 350,
           temperature: 0.7,
           top_p: 0.9,
           repetition_penalty: 1.1,
