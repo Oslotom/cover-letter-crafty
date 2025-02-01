@@ -16,6 +16,12 @@ export const CoverLetterGenerator = ({ cvContent, jobContent }: CoverLetterGener
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
 
+  const truncateText = (text: string) => {
+    // Roughly estimate 4 characters per token
+    const maxChars = 4000; // This gives us roughly 1000 tokens per text
+    return text.length > maxChars ? text.slice(0, maxChars) + '...' : text;
+  };
+
   const generateCoverLetter = async () => {
     if (!cvContent || !jobContent) {
       toast({
@@ -28,37 +34,34 @@ export const CoverLetterGenerator = ({ cvContent, jobContent }: CoverLetterGener
 
     setIsGenerating(true);
     try {
-      const hf = new HfInference("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"); // Replace with your actual key if needed
-      const prompt = `Generate a professional cover letter based on the following CV and job description. Return ONLY the cover letter text, nothing else, max 300 characters.
+      const hf = new HfInference("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");
+      
+      // Truncate inputs to manage token count
+      const truncatedCV = truncateText(cvContent);
+      const truncatedJob = truncateText(jobContent);
+      
+      const prompt = `Generate a professional cover letter (max 300 words) based on this CV and job description:
 
-CV:
-${cvContent}
+CV Summary:
+${truncatedCV}
 
-Job Description:
-${jobContent}
+Job Summary:
+${truncatedJob}
 
-Write a concise and compelling cover letter that:
-1. Introduces the candidate professionally
-2. Highlights relevant experience and skills from the CV that match the job requirements
-3. Explains why the candidate is a good fit for the role
-4. Concludes with a call to action
-5. Uses a professional tone throughout. Do not include any extra text or explanations outside the cover letter itself.
-
-Cover Letter:`;
+Write a concise cover letter that matches the CV skills to job requirements. Include: introduction, relevant experience, why you're a good fit, and call to action.`;
 
       const response = await hf.textGeneration({
-        model: 'mistralai/Mistral-7B-Instruct-v0.2', // Or a model better suited for this task
+        model: 'mistralai/Mistral-7B-Instruct-v0.2',
         inputs: prompt,
         parameters: {
-          max_new_tokens: 400, // Increased for potentially longer letters
-          temperature: 0.8, // Lowered for more focused output
+          max_new_tokens: 300,
+          temperature: 0.7,
           top_p: 0.9,
-          repetition_penalty: 1.0,
+          repetition_penalty: 1.2,
         },
       });
 
       const generatedText = response.generated_text.trim();
-
       const extractedLetter = extractCoverLetter(generatedText);
       setCoverLetter(extractedLetter);
 
@@ -105,7 +108,7 @@ Cover Letter:`;
 
 
   return (
-    <div className="space-y-4 ">
+    <div className="space-y-4">
       <Button
         onClick={generateCoverLetter}
         disabled={isGenerating || !cvContent || !jobContent}
