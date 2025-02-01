@@ -34,7 +34,7 @@ const Index = () => {
           </div>
 
           <div className="space-y-2">
-            <h2 className="text-lg text-white">3. Generate Cover Letter</h2>
+            <h2 className="text-lg text-white">3. Generate a Cover Letter</h2>
             <CoverLetterGenerator
               cvContent={cvContent}
               jobContent={jobContent}
