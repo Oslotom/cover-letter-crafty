@@ -4,7 +4,6 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import * as pdfjsLib from 'pdfjs-dist';
-import PDFWorker from 'pdfjs-dist/build/pdf.worker.min.js?url';
 
 interface FileUploadProps {
   onFileContent: (content: string) => void;
@@ -27,7 +26,7 @@ export const FileUpload = ({ onFileContent }: FileUploadProps) => {
 
     setIsLoading(true);
     try {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = PDFWorker;
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
       let fullText = '';
