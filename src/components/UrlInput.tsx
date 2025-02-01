@@ -64,17 +64,33 @@ export const UrlInput = ({ onUrlContent }: UrlInputProps) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2">
-      <Input
-        type="url"
-        placeholder="Enter job posting URL"
-        value={url}
-        onChange={(e) => setUrl(e.target.value)}
-        className="flex-1"
-      />
-      <Button type="submit" disabled={isLoading}>
-        {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Extract"}
-      </Button>
+    <form onSubmit={handleSubmit} className="flex">
+      <div className="relative flex-grow">
+        <Input
+          type="url"
+          placeholder="Enter job posting URL"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          style={{ width: '100%',  height: '70px', paddingRight: '40px'   }} // Adjust padding as needed
+        />
+        <Button
+          type="submit"
+          disabled={isLoading}
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            right: 0,
+            padding: '8px 20px', // Adjust padding as needed
+            margin: '14px',
+            height: '44px',
+           
+            background: 'linear-gradient(to right, rgb(64, 160, 255), rgb(143, 80, 255))',
+                    }}
+        >
+          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : " ✨  Load"}
+        </Button>
+      </div>
     </form>
   );
 };
