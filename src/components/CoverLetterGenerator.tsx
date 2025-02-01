@@ -40,7 +40,7 @@ export const CoverLetterGenerator = ({ cvContent, jobContent }: CoverLetterGener
       const truncatedCV = truncateText(cvContent);
       const truncatedJob = truncateText(jobContent);
       
-      const prompt = `Create a concise and professional cover letter (max 300 words) based on the following CV and job description. Output ONLY the cover letter text.
+      const prompt = `Create a concise and professional cover letter (max 250 words) based on the following CV and job description. Output ONLY the cover letter text.
 
 CV Summary:
 ${truncatedCV}
@@ -54,7 +54,7 @@ ${truncatedJob}
         model: 'mistralai/Mistral-7B-Instruct-v0.2',
         inputs: prompt,
         parameters: {
-          max_new_tokens: 350,
+          max_new_tokens: 400,
           temperature: 0.7,
           top_p: 0.9,
           repetition_penalty: 1.1,
