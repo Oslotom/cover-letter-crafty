@@ -3,7 +3,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import * as pdfjsLib from 'pdfjs-dist';
 
 interface FileUploadProps {
   onFileContent: (content: string) => void;
@@ -15,10 +14,10 @@ export const FileUpload = ({ onFileContent }: FileUploadProps) => {
   const { toast } = useToast();
 
   const handleFile = async (file: File) => {
-    if (file.type !== 'application/pdf') {
+    if (file.type !== 'text/plain') {
       toast({
         title: "Invalid file type",
-        description: "Please upload a PDF file",
+        description: "Please upload a text file",
         variant: "destructive",
       });
       return;
@@ -26,28 +25,17 @@ export const FileUpload = ({ onFileContent }: FileUploadProps) => {
 
     setIsLoading(true);
     try {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
-      const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
-      let fullText = '';
-      
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const content = await page.getTextContent();
-        const pageText = content.items.map((item: any) => item.str).join(' ');
-        fullText += pageText + ' ';
-      }
-      
-      onFileContent(fullText.trim());
+      const text = await file.text();
+      onFileContent(text.trim());
       toast({
         title: "Success",
         description: "CV uploaded successfully",
       });
     } catch (error) {
-      console.error('Error processing PDF:', error);
+      console.error('Error processing text file:', error);
       toast({
         title: "Error",
-        description: "Failed to process PDF file",
+        description: "Failed to process text file",
         variant: "destructive",
       });
     } finally {
@@ -84,7 +72,7 @@ export const FileUpload = ({ onFileContent }: FileUploadProps) => {
     >
       <input
         type="file"
-        accept=".pdf"
+        accept=".txt"
         className="hidden"
         id="file-upload"
         onChange={(e) => {
@@ -101,7 +89,7 @@ export const FileUpload = ({ onFileContent }: FileUploadProps) => {
         ) : (
           <div className="text-center">
             <p className="text-sm text-muted-foreground mb-2">
-              Drag and drop your CV here or click to browse
+              Drag and drop your CV text file here or click to browse
             </p>
             <Button variant="outline" size="sm">
               Choose File
