@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { HfInference } from '@huggingface/inference';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -64,11 +65,13 @@ Write a concise cover letter that matches the CV skills to job requirements. Inc
       const generatedText = response.generated_text.trim();
       const extractedLetter = extractCoverLetter(generatedText);
       setCoverLetter(extractedLetter);
-
+      
       toast({
         title: "Success",
         description: "Cover letter generated successfully",
       });
+
+      navigate('/cover-letter', { state: { coverLetter: extractedLetter } });
 
     } catch (error) {
       console.error('Error generating cover letter:', error);
@@ -86,7 +89,7 @@ Write a concise cover letter that matches the CV skills to job requirements. Inc
     // More robust extraction using regex (still needs refinement based on LLM output patterns)
 
     // Example Regex (ADAPT THIS TO YOUR LLM OUTPUT):
-    const regex = /(Dear\s[a-zA-Z\s.]*,\n[\s\S]*?(Sincerely|Best regards|Regards|Yours sincerely|Respectfully),\n[a-zA-Z\s]*)/i; // Improved regex, added more closings
+    const regex = /(Dear\s[a-zA-Z\s.]*,\\n[\s\S]*?(Sincerely|Best regards|Regards|Yours sincerely|Respectfully),\\n[a-zA-Z\s]*)/i; // Improved regex, added more closings
     const match = text.match(regex);
 
     if (match) {
@@ -107,6 +110,8 @@ Write a concise cover letter that matches the CV skills to job requirements. Inc
   };
 
 
+  const navigate = useNavigate();
+
   return (
     <div className="space-y-4">
       <Button
@@ -123,16 +128,6 @@ Write a concise cover letter that matches the CV skills to job requirements. Inc
           "Generate Cover Letter"
         )}
       </Button>
-
-      {coverLetter && (
-        <Card className="p-4">
-          <Textarea
-            value={coverLetter}
-            onChange={(e) => setCoverLetter(e.target.value)}
-            className="min-h-[650px] font-serif"
-          />
-        </Card>
-      )}
     </div>
   );
 };
