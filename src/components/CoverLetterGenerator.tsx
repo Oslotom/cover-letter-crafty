@@ -40,7 +40,7 @@ export const CoverLetterGenerator = ({ cvContent, jobContent }: CoverLetterGener
       const truncatedCV = truncateText(cvContent);
       const truncatedJob = truncateText(jobContent);
       
-      const prompt = `Create a concise and professional cover letter (max 300 words) based on the following CV and job description.  Focus on matching the skills and experience in the CV to the specific requirements of the job description. Start the cover letter directly with "Dear Hiring Manager,". Output ONLY the cover letter text.
+      const prompt = `Create a concise and professional cover letter (max 300 words) based on the following CV and job description. Output ONLY the cover letter text.
 
 CV Summary:
 ${truncatedCV}
