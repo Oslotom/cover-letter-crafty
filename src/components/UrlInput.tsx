@@ -88,21 +88,45 @@ export const UrlInput = ({ onUrlContent }: UrlInputProps) => {
     }
   };
 
-  const handleUploadClick = () => {
-    setShowUploadButton(false);
-    setShowUploadField(true);
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.type !== 'text/plain') {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload a text file",
+          variant: "destructive",
+        });
+        return;
+      }
+      handleFileContent(file);
+    }
   };
 
-  const handleFileContent = async (content: string) => {
-    setShowUploadField(false);
-    await updateMessage([
-      "Uploading resume...",
-      "Analyzing resume...",
-      "Writing cover letter...",
-      "All done"
-    ]);
-    onUrlContent(content);
-    setShowViewResumeButton(true);
+  const handleFileContent = async (file: File) => {
+    try {
+      const text = await file.text();
+      setShowUploadButton(false);
+      await updateMessage([
+        "Uploading resume...",
+        "Analyzing resume...",
+        "Writing cover letter...",
+        "All done"
+      ]);
+      onUrlContent(text.trim());
+      setShowViewResumeButton(true);
+      toast({
+        title: "Success",
+        description: "CV uploaded successfully",
+      });
+    } catch (error) {
+      console.error('Error processing text file:', error);
+      toast({
+        title: "Error",
+        description: "Failed to process text file",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -140,25 +164,34 @@ export const UrlInput = ({ onUrlContent }: UrlInputProps) => {
               )}
             </Button>
           )}
+          {showUploadButton && (
+            <Button
+              onClick={() => document.getElementById('file-input')?.click()}
+              style={{
+                position: 'absolute',
+                top: 0,
+                bottom: 0,
+                right: 0,
+                padding: '0px 35px',
+                margin: '6px',
+                height: '60px',
+                borderRadius: '15px',
+                background: 'linear-gradient(to right, rgb(64, 160, 255), rgb(143, 80, 255))',
+              }}
+            >
+              <Upload className="mr-2 h-4 w-4" />
+              Upload Resume
+            </Button>
+          )}
+          <input
+            type="file"
+            id="file-input"
+            accept=".txt"
+            className="hidden"
+            onChange={handleFileSelect}
+          />
         </div>
       </form>
-
-      {showUploadButton && (
-        <Button
-          onClick={handleUploadClick}
-          className="w-full h-[60px]"
-          style={{
-            background: 'linear-gradient(to right, rgb(64, 160, 255), rgb(143, 80, 255))',
-          }}
-        >
-          <Upload className="mr-2 h-4 w-4" />
-          Upload Resume
-        </Button>
-      )}
-
-      {showUploadField && (
-        <FileUpload onFileContent={handleFileContent} />
-      )}
 
       {showViewResumeButton && (
         <Button
