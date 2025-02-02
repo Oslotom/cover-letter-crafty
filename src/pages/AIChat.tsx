@@ -27,10 +27,10 @@ export default function AIChat() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchContext = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+    const checkAuth = async () => {
+      const { data: { user }, error } = await supabase.auth.getUser();
       
-      if (!user) {
+      if (error || !user) {
         toast({
           title: "Authentication required",
           description: "Please login to use the chat feature",
@@ -40,7 +40,8 @@ export default function AIChat() {
         return;
       }
 
-      const { data, error } = await supabase
+      // Fetch context only if user is authenticated
+      const { data, error: contextError } = await supabase
         .from('chat_messages')
         .select('cv_content, job_content')
         .eq('user_id', user.id)
@@ -49,7 +50,7 @@ export default function AIChat() {
         .limit(1)
         .single();
 
-      if (error || !data) {
+      if (contextError || !data) {
         toast({
           title: "Context not found",
           description: "Please upload your CV and job description first",
@@ -65,7 +66,7 @@ export default function AIChat() {
       });
     };
 
-    fetchContext();
+    checkAuth();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
