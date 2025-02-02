@@ -1,12 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { HfInference } from "@huggingface/inference";
+import { Send, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
-import { FileUpload } from "@/components/FileUpload";
-import { UrlInput } from "@/components/UrlInput";
-import { ChatMessages } from "@/components/chat/ChatMessages";
-import { ChatInput } from "@/components/chat/ChatInput";
-import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   role: "user" | "assistant";
@@ -15,134 +10,106 @@ interface Message {
 
 export default function AIChat() {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [cvContent, setCvContent] = useState("");
-  const [jobContent, setJobContent] = useState("");
   const navigate = useNavigate();
-  const { toast } = useToast();
 
-  const handleSendMessage = async (content: string) => {
-    if (!cvContent || !jobContent) {
-      toast({
-        title: "Missing context",
-        description: "Please provide both resume and job description",
-        variant: "destructive",
-      });
-      return;
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
 
-    const userMessage: Message = { role: "user", content };
+    const userMessage = { role: "user", content: input };
     setMessages((prev) => [...prev, userMessage]);
+    setInput("");
     setIsLoading(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-
-      // Store the message in Supabase
-      await supabase.from("chat_messages").insert({
-        user_id: user.id,
-        cv_content: cvContent,
-        job_content: jobContent,
-        message: content,
-        role: "user",
-      });
-
-      // Call the AI function to get a response
-      const response = await supabase.functions.invoke("chat-ai", {
-        body: {
-          messages,
-          newMessage: content,
-          cvContent,
-          jobContent,
+      const hf = new HfInference("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");
+      const response = await hf.textGeneration({
+        model: "mistralai/Mistral-7B-Instruct-v0.2",
+        inputs: input,
+        parameters: {
+          max_new_tokens: 250,
+          temperature: 0.7,
+          top_p: 0.9,
+          repetition_penalty: 1.1,
         },
       });
 
-      if (response.error) throw response.error;
-
-      const assistantMessage: Message = {
+      const assistantMessage = {
         role: "assistant",
-        content: response.data.message,
+        content: response.generated_text,
       };
-
-      // Store the AI response in Supabase
-      await supabase.from("chat_messages").insert({
-        user_id: user.id,
-        cv_content: cvContent,
-        job_content: jobContent,
-        message: response.data.message,
-        role: "assistant",
-      });
-
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error("Error:", error);
-      toast({
-        title: "Error",
-        description: "Failed to generate response",
-        variant: "destructive",
-      });
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Load previous messages on component mount
-  useEffect(() => {
-    const loadMessages = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: messages } = await supabase
-        .from("chat_messages")
-        .select("*")
-        .order("created_at", { ascending: true });
-
-      if (messages && messages.length > 0) {
-        setMessages(
-          messages.map((msg) => ({
-            role: msg.role as "user" | "assistant",
-            content: msg.message,
-          }))
-        );
-        // Set the context from the latest message
-        const lastMessage = messages[messages.length - 1];
-        if (lastMessage.cv_content) setCvContent(lastMessage.cv_content);
-        if (lastMessage.job_content) setJobContent(lastMessage.job_content);
-      }
-    };
-
-    loadMessages();
-  }, []);
-
   return (
-    <div className="min-h-screen py-8 bg-gradient-to-b from-[#1a242f] to-[#222f3a]">
-      <div className="container max-w-2xl mx-auto space-y-8 pt-16 p-8">
-        <div className="flex items-center justify-between mb-8">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 hover:bg-accent rounded-lg text-white"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <h1 className="text-4xl font-bold text-center">
-            <span className="span-gradient-text">AI Recruitment Assistant</span>
-          </h1>
-          <div className="w-5" />
-        </div>
+    <div className="flex flex-col h-screen bg-background">
+      <div className="flex items-center p-4 border-b border-border">
+        <button
+          onClick={() => navigate(-1)}
+          className="p-2 hover:bg-accent rounded-lg"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <h1 className="text-xl font-semibold ml-4">AI Chat Assistant</h1>
+      </div>
 
-        {!cvContent && !jobContent && (
-          <div className="space-y-4 mb-8">
-            <FileUpload onFileContent={setCvContent} />
-            <UrlInput onUrlContent={setJobContent} />
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.map((message, index) => (
+          <div
+            key={index}
+            className={`flex ${
+              message.role === "assistant" ? "justify-start" : "justify-end"
+            }`}
+          >
+            <div
+              className={`max-w-[80%] p-4 rounded-lg ${
+                message.role === "assistant"
+                  ? "bg-accent"
+                  : "bg-primary text-primary-foreground"
+              }`}
+            >
+              {message.content}
+            </div>
+          </div>
+        ))}
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="max-w-[80%] p-4 rounded-lg bg-accent">
+              <div className="flex space-x-2">
+                <div className="w-2 h-2 bg-foreground rounded-full animate-bounce" />
+                <div className="w-2 h-2 bg-foreground rounded-full animate-bounce [animation-delay:0.2s]" />
+                <div className="w-2 h-2 bg-foreground rounded-full animate-bounce [animation-delay:0.4s]" />
+              </div>
+            </div>
           </div>
         )}
-
-        <div className="bg-white/10 rounded-lg p-6 min-h-[500px] flex flex-col">
-          <ChatMessages messages={messages} isLoading={isLoading} />
-          <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
-        </div>
       </div>
+
+      <form onSubmit={handleSubmit} className="p-4 border-t border-border">
+        <div className="flex space-x-4">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Type your message..."
+            className="flex-1 p-2 rounded-lg bg-accent"
+          />
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="p-2 bg-primary text-primary-foreground rounded-lg disabled:opacity-50"
+          >
+            <Send className="w-5 h-5" />
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

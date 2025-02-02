@@ -1,17 +1,20 @@
 import { useState } from 'react';
-import { StatusMessage } from './url-input/StatusMessage';
-import { FileUploadButton } from './url-input/FileUploadButton';
-import { ActionButtons } from './url-input/ActionButtons';
+import { FileText, Loader2, Download, MessageSquare } from 'lucide-react';
+import { HfInference } from '@huggingface/inference';
+import { useNavigate } from 'react-router-dom';
 
 interface UrlInputProps {
   onUrlContent: (content: string) => void;
 }
 
 export function UrlInput({ onUrlContent }: UrlInputProps) {
+  const navigate = useNavigate();
+  
   const [url, setUrl] = useState('');
   const [showLoad, setShowLoad] = useState(false);
   const [currentStep, setCurrentStep] = useState<string | null>(null);
   const [showFileUpload, setShowFileUpload] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
   const [coverLetter, setCoverLetter] = useState<string | null>(null);
   const [showViewButton, setShowViewButton] = useState(false);
   const [showCoverLetter, setShowCoverLetter] = useState(false);
@@ -32,6 +35,11 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
     'Generating cover letter',
     'Your cover letter is complete'
   ];
+
+  const truncateText = (text: string) => {
+    const maxChars = 4000;
+    return text.length > maxChars ? text.slice(0, maxChars) + '...' : text;
+  };
 
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUrl(e.target.value);
@@ -83,13 +91,15 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
       return;
     }
 
+    setFile(selectedFile);
     setShowFileUpload(false);
     
     try {
       const text = await selectedFile.text();
       setCvContent(text.trim());
       
-      await runStepSequence(fileSteps, () => {
+      await runStepSequence(fileSteps, async () => {
+        await generateCoverLetter(text.trim(), jobContent);
         setShowViewButton(true);
       });
     } catch (error) {
@@ -97,6 +107,62 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
       setCurrentStep('Error processing file');
       setShowFileUpload(true);
     }
+  };
+
+  const generateCoverLetter = async (cv: string, job: string) => {
+    try {
+      const hf = new HfInference("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");
+      
+      const truncatedCV = truncateText(cv);
+      const truncatedJob = truncateText(job);
+      
+      const prompt = `Create a concise and professional cover letter (max 250 words) based on the following CV and job description. Keep it short and consise. Output ONLY the cover letter text.
+
+CV Summary:
+${truncatedCV}
+
+Job Summary:
+${truncatedJob}
+
+.`;
+
+      const response = await hf.textGeneration({
+        model: 'mistralai/Mistral-7B-Instruct-v0.2',
+        inputs: prompt,
+        parameters: {
+          max_new_tokens: 400,
+          temperature: 0.7,
+          top_p: 0.9,
+          repetition_penalty: 1.1,
+        },
+      });
+
+      const generatedText = response.generated_text.trim();
+      setCoverLetter(extractCoverLetter(generatedText));
+    } catch (error) {
+      console.error('Error generating cover letter:', error);
+      setCurrentStep('Error generating cover letter');
+    }
+  };
+
+  const extractCoverLetter = (text: string) => {
+    const regex = /(Dear\s[a-zA-Z\s.]*,\n[\s\S]*?(Sincerely|Best regards|Regards|Yours sincerely|Respectfully),\n[a-zA-Z\s]*)/i;
+    const match = text.match(regex);
+
+    if (match) {
+      return match[0].trim();
+    }
+
+    const startMarker = text.indexOf("Dear");
+    const endMarker = text.lastIndexOf("Sincerely,") || text.lastIndexOf("Best regards,") || text.lastIndexOf("Regards,") || text.lastIndexOf("Yours sincerely,") || text.lastIndexOf("Respectfully,");
+
+    if (startMarker !== -1 && endMarker !== -1) {
+      return text.substring(startMarker, endMarker + 15).trim();
+    } else if (startMarker !== -1) {
+      return text.substring(startMarker).trim();
+    }
+
+    return text.trim();
   };
 
   const toggleCoverLetter = () => {
@@ -138,23 +204,47 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
           </>
         ) : (
           <div className="flex items-center justify-between w-full">
-            <StatusMessage
-              currentStep={currentStep}
-              showFileUpload={showFileUpload}
-              showViewButton={showViewButton}
-            />
+            <div className="flex items-center space-x-3">
+              {currentStep && (
+                <>
+                  <Loader2 className="animate-spin" />
+                  <span className="text-white">{currentStep}</span>
+                </>
+              )}
+              {showFileUpload && !currentStep && (
+                <span className="text-white">Upload your resume as PDF or text file</span>
+              )}
+              {showViewButton && !currentStep && !showFileUpload && (
+                <span className="text-white">Click to show your cover letter</span>
+              )}
+            </div>
             <div className="flex items-center space-x-2">
               {showFileUpload && (
-                <FileUploadButton onFileChange={handleFileChange} />
+                <div className="relative">
+                  <input
+                    type="file"
+                    onChange={handleFileChange}
+                    className="hidden"
+                    id="file-upload"
+                    accept=".txt,.pdf"
+                  />
+                  <label
+                    htmlFor="file-upload"
+                    className="px-6 h-[64px] bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:opacity-90 transition cursor-pointer flex items-center space-x-2"
+                  >
+                    <FileText className="w-4 h-4" />
+                    <span>Choose File</span>
+                  </label>
+                </div>
               )}
-              <ActionButtons
-                showViewButton={showViewButton}
-                showCoverLetter={showCoverLetter}
-                toggleCoverLetter={toggleCoverLetter}
-                cvContent={cvContent}
-                jobContent={jobContent}
-                downloadPDF={downloadPDF}
-              />
+              {showViewButton && (
+                <button
+                  onClick={toggleCoverLetter}
+                  className="px-6 h-[64px] bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg hover:opacity-90 transition"
+                >
+                  {showCoverLetter ? 'Hide Cover Letter' : 'View Cover Letter'}
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -162,6 +252,22 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
      
       {showCoverLetter && coverLetter && (
         <div className="mt-4 p-6 bg-white/10 rounded-lg text-white">
+          <div className="flex justify-end mb-4 space-x-4">
+            <button
+              onClick={() => navigate('/chat')}
+              className="px-6 h-[64px] bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg hover:opacity-90 transition flex items-center space-x-2"
+            >
+              <MessageSquare className="w-4 h-4" />
+              <span>Chat with AI</span>
+            </button>
+            <button
+              onClick={downloadPDF}
+              className="px-6 h-[64px] bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:opacity-90 transition flex items-center space-x-2"
+            >
+              <Download className="w-4 h-4" />
+              <span>Download</span>
+            </button>
+          </div>
           <pre className="whitespace-pre-wrap font-sans">{coverLetter}</pre>
         </div>
       )}
