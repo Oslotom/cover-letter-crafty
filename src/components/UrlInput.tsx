@@ -181,6 +181,15 @@ ${truncatedJob}
     document.body.removeChild(element);
   };
 
+  const handleChatClick = () => {
+    navigate('/chat', { 
+      state: { 
+        cvContent, 
+        jobContent 
+      } 
+    });
+  };
+
   return (
     <div className="relative">
       <div className="max-h-[74px] w-full p-6 rounded-lg bg-white/10 text-white border border-white/20 min-h-[70px] flex items-center justify-between">
@@ -245,6 +254,15 @@ ${truncatedJob}
                   {showCoverLetter ? 'Hide Cover Letter' : 'View Cover Letter'}
                 </button>
               )}
+              {showViewButton && (
+                <button
+                  onClick={handleChatClick}
+                  className="px-6 h-[64px] bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg hover:opacity-90 transition flex items-center space-x-2"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span>Chat with AI</span>
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -253,13 +271,6 @@ ${truncatedJob}
       {showCoverLetter && coverLetter && (
         <div className="mt-4 p-6 bg-white/10 rounded-lg text-white">
           <div className="flex justify-end mb-4 space-x-4">
-            <button
-              onClick={() => navigate('/chat')}
-              className="px-6 h-[64px] bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg hover:opacity-90 transition flex items-center space-x-2"
-            >
-              <MessageSquare className="w-4 h-4" />
-              <span>Chat with AI</span>
-            </button>
             <button
               onClick={downloadPDF}
               className="px-6 h-[64px] bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:opacity-90 transition flex items-center space-x-2"
