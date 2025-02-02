@@ -1,11 +1,12 @@
-import { useState } from "react";
-import { HfInference } from "@huggingface/inference";
-import { Send, ArrowLeft } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { FileUpload } from "@/components/FileUpload";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { FileUpload } from "@/components/FileUpload";
+import { UrlInput } from "@/components/UrlInput";
+import { ChatMessages } from "@/components/chat/ChatMessages";
+import { ChatInput } from "@/components/chat/ChatInput";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   role: "user" | "assistant";
@@ -14,63 +15,13 @@ interface Message {
 
 export default function AIChat() {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [cvContent, setCvContent] = useState("");
-  const [jobUrl, setJobUrl] = useState("");
   const [jobContent, setJobContent] = useState("");
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
-  const locationState = location.state as { cvContent?: string; jobContent?: string } | null;
 
-  // Initialize chat with context if available from navigation
-  useState(() => {
-    if (locationState?.cvContent && locationState?.jobContent) {
-      setCvContent(locationState.cvContent);
-      setJobContent(locationState.jobContent);
-      const systemMessage: Message = {
-        role: "assistant",
-        content: "Hello! I'm your AI recruitment assistant. I have reviewed your resume and the job description. I can help you prepare for your application and interview. What would you like to know?",
-      };
-      setMessages([systemMessage]);
-    }
-  });
-
-  const fetchJobContent = async (url: string) => {
-    try {
-      const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
-      const data = await response.json();
-      
-      if (!data.contents) throw new Error('Failed to fetch URL content');
-      
-      const doc = new DOMParser().parseFromString(data.contents, 'text/html');
-      const scripts = doc.getElementsByTagName('script');
-      const styles = doc.getElementsByTagName('style');
-      [...scripts, ...styles].forEach(el => el.remove());
-      
-      const textContent = doc.body.textContent || '';
-      const cleanText = textContent.replace(/\s+/g, ' ').trim();
-      
-      setJobContent(cleanText);
-      toast({
-        title: "Success",
-        description: "Job description loaded successfully",
-      });
-    } catch (error) {
-      console.error('Error fetching URL:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch job description",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
-
+  const handleSendMessage = async (content: string) => {
     if (!cvContent || !jobContent) {
       toast({
         title: "Missing context",
@@ -80,49 +31,49 @@ export default function AIChat() {
       return;
     }
 
-    const userMessage: Message = { role: "user", content: input };
+    const userMessage: Message = { role: "user", content };
     setMessages((prev) => [...prev, userMessage]);
-    setInput("");
     setIsLoading(true);
 
     try {
-      const hf = new HfInference("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");
-      
-      const conversationHistory = messages
-        .map((msg) => `${msg.role === "user" ? "User" : "Assistant"}: ${msg.content}`)
-        .join("\n");
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
 
-      const systemContext = `You are a senior recruitment professional. Keep your responses concise (3-4 sentences) and always end with 2-3 relevant follow-up questions.
+      // Store the message in Supabase
+      await supabase.from("chat_messages").insert({
+        user_id: user.id,
+        cv_content: cvContent,
+        job_content: jobContent,
+        message: content,
+        role: "user",
+      });
 
-Resume:
-${cvContent}
-
-Job Description:
-${jobContent}
-
-Previous conversation:
-${conversationHistory}
-
-Based on this context, provide professional advice tailored to their situation.
-
-User: ${input}
-Assistant:`;
-
-      const response = await hf.textGeneration({
-        model: "mistralai/Mistral-7B-Instruct-v0.2",
-        inputs: systemContext,
-        parameters: {
-          max_new_tokens: 500,
-          temperature: 0.7,
-          top_p: 0.9,
-          repetition_penalty: 1.1,
+      // Call the AI function to get a response
+      const response = await supabase.functions.invoke("chat-ai", {
+        body: {
+          messages,
+          newMessage: content,
+          cvContent,
+          jobContent,
         },
       });
 
+      if (response.error) throw response.error;
+
       const assistantMessage: Message = {
         role: "assistant",
-        content: response.generated_text.trim(),
+        content: response.data.message,
       };
+
+      // Store the AI response in Supabase
+      await supabase.from("chat_messages").insert({
+        user_id: user.id,
+        cv_content: cvContent,
+        job_content: jobContent,
+        message: response.data.message,
+        role: "assistant",
+      });
+
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error("Error:", error);
@@ -135,6 +86,34 @@ Assistant:`;
       setIsLoading(false);
     }
   };
+
+  // Load previous messages on component mount
+  useEffect(() => {
+    const loadMessages = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: messages } = await supabase
+        .from("chat_messages")
+        .select("*")
+        .order("created_at", { ascending: true });
+
+      if (messages && messages.length > 0) {
+        setMessages(
+          messages.map((msg) => ({
+            role: msg.role as "user" | "assistant",
+            content: msg.message,
+          }))
+        );
+        // Set the context from the latest message
+        const lastMessage = messages[messages.length - 1];
+        if (lastMessage.cv_content) setCvContent(lastMessage.cv_content);
+        if (lastMessage.job_content) setJobContent(lastMessage.job_content);
+      }
+    };
+
+    loadMessages();
+  }, []);
 
   return (
     <div className="min-h-screen py-8 bg-gradient-to-b from-[#1a242f] to-[#222f3a]">
@@ -152,75 +131,16 @@ Assistant:`;
           <div className="w-5" />
         </div>
 
-        {!locationState && (
+        {!cvContent && !jobContent && (
           <div className="space-y-4 mb-8">
             <FileUpload onFileContent={setCvContent} />
-            <div className="flex gap-2">
-              <Input
-                type="url"
-                placeholder="Paste job posting URL"
-                value={jobUrl}
-                onChange={(e) => setJobUrl(e.target.value)}
-                className="flex-1"
-              />
-              <Button onClick={() => fetchJobContent(jobUrl)} disabled={!jobUrl}>
-                Load Job
-              </Button>
-            </div>
+            <UrlInput onUrlContent={setJobContent} />
           </div>
         )}
 
         <div className="bg-white/10 rounded-lg p-6 min-h-[500px] flex flex-col">
-          <div className="flex-1 overflow-y-auto space-y-4 mb-4">
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex ${
-                  message.role === "assistant" ? "justify-start" : "justify-end"
-                }`}
-              >
-                <div
-                  className={`max-w-[80%] p-4 rounded-lg ${
-                    message.role === "assistant"
-                      ? "bg-accent/50 text-white"
-                      : "bg-primary text-primary-foreground"
-                  }`}
-                >
-                  {message.content}
-                </div>
-              </div>
-            ))}
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="max-w-[80%] p-4 rounded-lg bg-accent/50 text-white">
-                  <div className="flex space-x-2">
-                    <div className="w-2 h-2 bg-white rounded-full animate-bounce" />
-                    <div className="w-2 h-2 bg-white rounded-full animate-bounce [animation-delay:0.2s]" />
-                    <div className="w-2 h-2 bg-white rounded-full animate-bounce [animation-delay:0.4s]" />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <form onSubmit={handleSubmit} className="mt-4">
-            <div className="flex space-x-4">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Type your message..."
-                className="flex-1 p-4 rounded-lg bg-white/5 text-white placeholder-white/50 border border-white/20"
-              />
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="p-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:opacity-90 transition disabled:opacity-50"
-              >
-                <Send className="w-5 h-5" />
-              </button>
-            </div>
-          </form>
+          <ChatMessages messages={messages} isLoading={isLoading} />
+          <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
         </div>
       </div>
     </div>
