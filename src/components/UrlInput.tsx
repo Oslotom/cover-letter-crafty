@@ -1,12 +1,15 @@
 import { useState } from 'react';
-import { FileText, Loader2, Download } from 'lucide-react';
+import { FileText, Loader2, Download, MessageSquare } from 'lucide-react';
 import { HfInference } from '@huggingface/inference';
+import { useNavigate } from 'react-router-dom';
 
 interface UrlInputProps {
   onUrlContent: (content: string) => void;
 }
 
 export function UrlInput({ onUrlContent }: UrlInputProps) {
+  const navigate = useNavigate();
+  
   const [url, setUrl] = useState('');
   const [showLoad, setShowLoad] = useState(false);
   const [currentStep, setCurrentStep] = useState<string | null>(null);
@@ -248,9 +251,15 @@ ${truncatedJob}
       </div>
      
       {showCoverLetter && coverLetter && (
-        
         <div className="mt-4 p-6 bg-white/10 rounded-lg text-white">
-          <div className="flex justify-end mb-4">
+          <div className="flex justify-end mb-4 space-x-4">
+            <button
+              onClick={() => navigate('/chat')}
+              className="px-6 h-[64px] bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg hover:opacity-90 transition flex items-center space-x-2"
+            >
+              <MessageSquare className="w-4 h-4" />
+              <span>Chat with AI</span>
+            </button>
             <button
               onClick={downloadPDF}
               className="px-6 h-[64px] bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:opacity-90 transition flex items-center space-x-2"
