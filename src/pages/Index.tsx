@@ -22,7 +22,15 @@ const Index = () => {
             <UrlInput onUrlContent={setJobContent} />
           </div>
           <div className="grid gap-8">
-         
+          <div className="space-y-6">
+            <FileUpload onFileContent={setCvContent} />
+          </div>
+          <div className="space-y-6 ">
+            <CoverLetterGenerator
+              cvContent={cvContent}
+              jobContent={jobContent}
+            />
+          </div>
         </div>
       </div>
     </div>
