@@ -86,7 +86,7 @@ export const UrlInput = ({ onUrlContent }: UrlInputProps) => {
     }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.type !== 'text/plain') {
@@ -97,13 +97,7 @@ export const UrlInput = ({ onUrlContent }: UrlInputProps) => {
         });
         return;
       }
-      handleFileContent(file);
-    }
-  };
-
-  const handleFileContent = async (file: File) => {
-    try {
-      const text = await file.text();
+      
       setShowUploadButton(false);
       await updateMessage([
         "Uploading resume...",
@@ -111,20 +105,29 @@ export const UrlInput = ({ onUrlContent }: UrlInputProps) => {
         "Writing cover letter...",
         "All done"
       ]);
-      onUrlContent(text.trim());
-      setShowViewResumeButton(true);
-      toast({
-        title: "Success",
-        description: "CV uploaded successfully",
-      });
-    } catch (error) {
-      console.error('Error processing text file:', error);
-      toast({
-        title: "Error",
-        description: "Failed to process text file",
-        variant: "destructive",
-      });
+      
+      try {
+        const text = await file.text();
+        onUrlContent(text.trim());
+        setShowViewResumeButton(true);
+        toast({
+          title: "Success",
+          description: "CV uploaded successfully",
+        });
+      } catch (error) {
+        console.error('Error processing text file:', error);
+        toast({
+          title: "Error",
+          description: "Failed to process text file",
+          variant: "destructive",
+        });
+      }
     }
+  };
+
+  const handleViewResume = () => {
+    // Navigate to the cover letter page
+    window.location.href = '/cover-letter';
   };
 
   return (
@@ -163,8 +166,36 @@ export const UrlInput = ({ onUrlContent }: UrlInputProps) => {
             </Button>
           )}
           {showUploadButton && (
+            <>
+              <input
+                type="file"
+                id="file-input"
+                accept=".txt"
+                className="hidden"
+                onChange={handleFileSelect}
+              />
+              <Button
+                onClick={() => document.getElementById('file-input')?.click()}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  bottom: 0,
+                  right: 0,
+                  padding: '0px 35px',
+                  margin: '6px',
+                  height: '60px',
+                  borderRadius: '15px',
+                  background: 'linear-gradient(to right, rgb(64, 160, 255), rgb(143, 80, 255))',
+                }}
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                Upload Resume
+              </Button>
+            </>
+          )}
+          {showViewResumeButton && (
             <Button
-              onClick={() => document.getElementById('file-input')?.click()}
+              onClick={handleViewResume}
               style={{
                 position: 'absolute',
                 top: 0,
@@ -177,32 +208,12 @@ export const UrlInput = ({ onUrlContent }: UrlInputProps) => {
                 background: 'linear-gradient(to right, rgb(64, 160, 255), rgb(143, 80, 255))',
               }}
             >
-              <Upload className="mr-2 h-4 w-4" />
-              Upload Resume
+              <FileText className="mr-2 h-4 w-4" />
+              View Resume
             </Button>
           )}
-          <input
-            type="file"
-            id="file-input"
-            accept=".txt"
-            className="hidden"
-            onChange={handleFileSelect}
-          />
         </div>
       </form>
-
-      {showViewResumeButton && (
-        <Button
-          onClick={() => {/* Implement view resume functionality */}}
-          className="w-full h-[60px]"
-          style={{
-            background: 'linear-gradient(to right, rgb(64, 160, 255), rgb(143, 80, 255))',
-          }}
-        >
-          <FileText className="mr-2 h-4 w-4" />
-          View Resume
-        </Button>
-      )}
     </div>
   );
 };
