@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { HfInference } from "@huggingface/inference";
-import { Send, ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Send } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Header } from "@/components/Header";
+import { cn } from "@/lib/utils";
 
 interface Message {
   role: "user" | "assistant";
@@ -12,7 +14,6 @@ export default function AIChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,9 +26,15 @@ export default function AIChat() {
 
     try {
       const hf = new HfInference("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");
+      const prompt = `<|system|>You are a helpful AI assistant. Respond to the user's message in a clear and concise way.
+
+<|user|>${input}
+
+<|assistant|>`;
+      
       const response = await hf.textGeneration({
         model: "mistralai/Mistral-7B-Instruct-v0.2",
-        inputs: input,
+        inputs: prompt,
         parameters: {
           max_new_tokens: 250,
           temperature: 0.7,
@@ -49,67 +56,63 @@ export default function AIChat() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background">
-      <div className="flex items-center p-4 border-b border-border">
-        <button
-          onClick={() => navigate(-1)}
-          className="p-2 hover:bg-accent rounded-lg"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <h1 className="text-xl font-semibold ml-4">AI Chat Assistant</h1>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`flex ${
-              message.role === "assistant" ? "justify-start" : "justify-end"
-            }`}
-          >
+    <div className="flex flex-col min-h-screen bg-background">
+      <Header />
+      
+      <main className="flex-1 container max-w-4xl mx-auto p-4 pt-24">
+        <div className="space-y-4 mb-4">
+          {messages.map((message, index) => (
             <div
-              className={`max-w-[80%] p-4 rounded-lg ${
-                message.role === "assistant"
-                  ? "bg-accent"
+              key={index}
+              className={cn(
+                "flex gap-3 p-4 rounded-lg",
+                message.role === "assistant" 
+                  ? "bg-muted" 
                   : "bg-primary text-primary-foreground"
-              }`}
+              )}
             >
-              {message.content}
-            </div>
-          </div>
-        ))}
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="max-w-[80%] p-4 rounded-lg bg-accent">
-              <div className="flex space-x-2">
-                <div className="w-2 h-2 bg-foreground rounded-full animate-bounce" />
-                <div className="w-2 h-2 bg-foreground rounded-full animate-bounce [animation-delay:0.2s]" />
-                <div className="w-2 h-2 bg-foreground rounded-full animate-bounce [animation-delay:0.4s]" />
+              <div className="flex-1 space-y-2">
+                <div className="font-medium">
+                  {message.role === "assistant" ? "AI Assistant" : "You"}
+                </div>
+                <div className="text-sm">{message.content}</div>
               </div>
             </div>
-          </div>
-        )}
-      </div>
-
-      <form onSubmit={handleSubmit} className="p-4 border-t border-border">
-        <div className="flex space-x-4">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your message..."
-            className="flex-1 p-2 rounded-lg bg-accent"
-          />
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="p-2 bg-primary text-primary-foreground rounded-lg disabled:opacity-50"
-          >
-            <Send className="w-5 h-5" />
-          </button>
+          ))}
+          
+          {isLoading && (
+            <div className="flex gap-3 p-4 rounded-lg bg-muted animate-pulse">
+              <div className="flex-1 space-y-2">
+                <div className="font-medium">AI Assistant</div>
+                <div className="flex space-x-2">
+                  <div className="w-2 h-2 bg-foreground rounded-full animate-bounce" />
+                  <div className="w-2 h-2 bg-foreground rounded-full animate-bounce [animation-delay:0.2s]" />
+                  <div className="w-2 h-2 bg-foreground rounded-full animate-bounce [animation-delay:0.4s]" />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      </form>
+
+        <form onSubmit={handleSubmit} className="sticky bottom-4">
+          <div className="flex gap-2 items-center bg-background border rounded-lg p-2">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Type your message..."
+              className="flex-1 bg-transparent border-0 focus:outline-none focus:ring-0 text-foreground"
+            />
+            <Button 
+              type="submit" 
+              size="icon"
+              disabled={isLoading}
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+          </div>
+        </form>
+      </main>
     </div>
   );
 }
