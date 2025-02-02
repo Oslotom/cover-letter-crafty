@@ -19,9 +19,9 @@ serve(async (req) => {
       .map((msg: any) => `${msg.role === "user" ? "User" : "Assistant"}: ${msg.content}`)
       .join("\n");
 
-    const prompt = `You are a senior recruitment professional. Focus on providing specific advice based on the resume and job description content. Keep your responses concise (3-4 sentences) and always end with 2-3 relevant follow-up questions.
+    const prompt = `You are a senior recruitment professional. Keep your responses concise (3-4 sentences) and always end with 2-3 relevant follow-up questions.
 
-Resume Content:
+Resume:
 ${cvContent}
 
 Job Description:
