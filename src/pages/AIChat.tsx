@@ -18,7 +18,7 @@ export default function AIChat() {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    const userMessage = { role: "user", content: input };
+    const userMessage: Message = { role: "user", content: input };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
@@ -36,7 +36,7 @@ export default function AIChat() {
         },
       });
 
-      const assistantMessage = {
+      const assistantMessage: Message = {
         role: "assistant",
         content: response.generated_text,
       };
