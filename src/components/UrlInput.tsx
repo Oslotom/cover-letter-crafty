@@ -3,7 +3,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Upload, Link, FileText } from "lucide-react";
-import { FileUpload } from './FileUpload';
 
 interface UrlInputProps {
   onUrlContent: (content: string) => void;
@@ -15,7 +14,6 @@ export const UrlInput = ({ onUrlContent }: UrlInputProps) => {
   const [showAnalyzeButton, setShowAnalyzeButton] = useState(false);
   const [inputMessage, setInputMessage] = useState('Paste the URL to the job description');
   const [showUploadButton, setShowUploadButton] = useState(false);
-  const [showUploadField, setShowUploadField] = useState(false);
   const [showViewResumeButton, setShowViewResumeButton] = useState(false);
   const { toast } = useToast();
 
