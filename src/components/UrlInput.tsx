@@ -86,6 +86,16 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
       
       await runStepSequence(fileSteps, () => {
         setShowViewButton(true);
+        // Generate cover letter here
+        const generatedLetter = `Dear Hiring Manager,
+
+I am writing to express my strong interest in the position at your company. Based on my experience and qualifications outlined in my resume, I believe I would be an excellent candidate for this role.
+
+[Cover letter content would be generated here based on CV and job description]
+
+Best regards,
+[Your name]`;
+        setCoverLetter(generatedLetter);
       });
     } catch (error) {
       console.error('Error reading file:', error);
@@ -118,7 +128,7 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
               type="url"
               placeholder={currentStep || "Paste job posting URL"}
               className="w-full bg-transparent outline-none"
-              value={url}
+              value={currentStep ? '' : url}
               onChange={handleUrlChange}
               disabled={!!currentStep}
             />
@@ -158,6 +168,11 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
           downloadPDF={downloadPDF}
           coverLetter={coverLetter}
         />
+        {showCoverLetter && coverLetter && (
+          <div className="mt-4 p-6 bg-white/10 rounded-lg text-white">
+            <pre className="whitespace-pre-wrap font-serif">{coverLetter}</pre>
+          </div>
+        )}
       </div>
     </div>
   );
