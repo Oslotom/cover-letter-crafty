@@ -6,7 +6,7 @@ interface FileUploadButtonProps {
 
 export const FileUploadButton = ({ onFileChange }: FileUploadButtonProps) => {
   return (
-    <div className="relative">
+    <div>
       <input
         type="file"
         onChange={onFileChange}
