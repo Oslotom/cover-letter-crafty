@@ -86,16 +86,6 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
       
       await runStepSequence(fileSteps, () => {
         setShowViewButton(true);
-        // Generate cover letter here
-        const generatedLetter = `Dear Hiring Manager,
-
-I am writing to express my strong interest in the position at your company. Based on my experience and qualifications outlined in my resume, I believe I would be an excellent candidate for this role.
-
-[Cover letter content would be generated here based on CV and job description]
-
-Best regards,
-[Your name]`;
-        setCoverLetter(generatedLetter);
       });
     } catch (error) {
       console.error('Error reading file:', error);
@@ -123,24 +113,14 @@ Best regards,
     <div className="relative">
       <div className="max-h-[74px] w-full p-6 rounded-lg bg-white/10 text-white border border-white/20 min-h-[70px] flex items-center justify-between">
         <div className="flex items-center justify-between w-full">
-          <div className="flex-1 mr-4 relative">
+          <div className="flex-1 mr-4">
             <input
               type="url"
-              placeholder={currentStep || "Paste job posting URL"}
+              placeholder="Paste job posting URL"
               className="w-full bg-transparent outline-none"
-              value={currentStep ? '' : url}
+              value={url}
               onChange={handleUrlChange}
-              disabled={!!currentStep}
             />
-            {currentStep && (
-              <div className="absolute left-0 top-0 w-full">
-                <StatusMessage
-                  currentStep={currentStep}
-                  showFileUpload={showFileUpload}
-                  showViewButton={showViewButton}
-                />
-              </div>
-            )}
           </div>
           <div className="flex items-center space-x-2">
             {showLoad && (
@@ -159,6 +139,11 @@ Best regards,
       </div>
 
       <div className="mt-4">
+        <StatusMessage
+          currentStep={currentStep}
+          showFileUpload={showFileUpload}
+          showViewButton={showViewButton}
+        />
         <ActionButtons
           showViewButton={showViewButton}
           showCoverLetter={showCoverLetter}
@@ -168,11 +153,6 @@ Best regards,
           downloadPDF={downloadPDF}
           coverLetter={coverLetter}
         />
-        {showCoverLetter && coverLetter && (
-          <div className="mt-4 p-6 bg-white/10 rounded-lg text-white">
-            <pre className="whitespace-pre-wrap font-serif">{coverLetter}</pre>
-          </div>
-        )}
       </div>
     </div>
   );
