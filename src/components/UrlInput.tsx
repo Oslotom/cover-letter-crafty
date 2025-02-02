@@ -17,7 +17,6 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
   const [showCoverLetter, setShowCoverLetter] = useState(false);
   const [jobContent, setJobContent] = useState('');
   const [cvContent, setCvContent] = useState('');
-  const [showInput, setShowInput] = useState(true);
 
   const urlSteps = [
     'Opening website...',
@@ -49,7 +48,6 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
 
   const handleLoadClick = async () => {
     setShowLoad(false);
-    setShowInput(false);
     try {
       const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
       const data = await response.json();
@@ -70,7 +68,6 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
     } catch (error) {
       console.error('Error fetching URL:', error);
       setCurrentStep('Error fetching job description');
-      setShowInput(true);
     }
   };
 
@@ -83,8 +80,6 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
       return;
     }
 
-    setShowFileUpload(false);
-    
     try {
       const text = await selectedFile.text();
       setCvContent(text.trim());
@@ -95,7 +90,6 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
     } catch (error) {
       console.error('Error reading file:', error);
       setCurrentStep('Error processing file');
-      setShowFileUpload(true);
     }
   };
 
@@ -118,53 +112,48 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
   return (
     <div className="relative">
       <div className="max-h-[74px] w-full p-6 rounded-lg bg-white/10 text-white border border-white/20 min-h-[70px] flex items-center justify-between">
-        {showInput ? (
-          <>
+        <div className="flex items-center justify-between w-full">
+          <div className="flex-1 mr-4">
             <input
               type="url"
               placeholder="Paste job posting URL"
-              className="flex-1 bg-transparent outline-none"
+              className="w-full bg-transparent outline-none"
               value={url}
               onChange={handleUrlChange}
             />
+          </div>
+          <div className="flex items-center space-x-2">
             {showLoad && (
               <button
                 onClick={handleLoadClick}
-                className="ml-4 px-6 h-[64px] bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:opacity-90 transition flex items-center space-x-2"
+                className="px-6 h-[64px] bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:opacity-90 transition flex items-center space-x-2"
               >
                 <span>✨ Load</span>
               </button>
             )}
-          </>
-        ) : (
-          <div className="flex items-center justify-between w-full">
-            <StatusMessage
-              currentStep={currentStep}
-              showFileUpload={showFileUpload}
-              showViewButton={showViewButton}
-            />
-            <div className="flex items-center space-x-2">
-              {showFileUpload && (
-                <FileUploadButton onFileChange={handleFileChange} />
-              )}
-              <ActionButtons
-                showViewButton={showViewButton}
-                showCoverLetter={showCoverLetter}
-                toggleCoverLetter={toggleCoverLetter}
-                cvContent={cvContent}
-                jobContent={jobContent}
-                downloadPDF={downloadPDF}
-              />
-            </div>
+            {showFileUpload && (
+              <FileUploadButton onFileChange={handleFileChange} />
+            )}
           </div>
-        )}
-      </div>
-     
-      {showCoverLetter && coverLetter && (
-        <div className="mt-4 p-6 bg-white/10 rounded-lg text-white">
-          <pre className="whitespace-pre-wrap font-sans">{coverLetter}</pre>
         </div>
-      )}
+      </div>
+
+      <div className="mt-4">
+        <StatusMessage
+          currentStep={currentStep}
+          showFileUpload={showFileUpload}
+          showViewButton={showViewButton}
+        />
+        <ActionButtons
+          showViewButton={showViewButton}
+          showCoverLetter={showCoverLetter}
+          toggleCoverLetter={toggleCoverLetter}
+          cvContent={cvContent}
+          jobContent={jobContent}
+          downloadPDF={downloadPDF}
+          coverLetter={coverLetter}
+        />
+      </div>
     </div>
   );
 }
