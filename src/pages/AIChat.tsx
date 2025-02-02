@@ -21,7 +21,7 @@ export default function AIChat() {
     if (cvContent && jobContent) {
       const systemMessage: Message = {
         role: "assistant",
-        content: "Hello! I'm your AI recruitment assistant. I have access to your resume and the job description. I can help you prepare for your application and interview. What would you like to know?",
+        content: "Hello! I'm your AI recruitment assistant. I have reviewed your resume and the job description. I can help you prepare for your application and interview. What would you like to know?",
       };
       setMessages([systemMessage]);
     }
@@ -38,7 +38,13 @@ export default function AIChat() {
 
     try {
       const hf = new HfInference("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");
-      const systemContext = `You are a senior recruitment professional. You have access to the following resume and job description:
+      
+      // Include full conversation history and context in the prompt
+      const conversationHistory = messages
+        .map((msg) => `${msg.role === "user" ? "User" : "Assistant"}: ${msg.content}`)
+        .join("\n");
+
+      const systemContext = `You are a senior recruitment professional. Keep your responses concise (3-4 sentences) and always end with 2-3 relevant follow-up questions.
 
 Resume:
 ${cvContent || "No resume provided"}
@@ -46,11 +52,17 @@ ${cvContent || "No resume provided"}
 Job Description:
 ${jobContent || "No job description provided"}
 
-Based on this information, help the user prepare for their job application and interview. Provide professional, specific advice tailored to their situation.`;
+Previous conversation:
+${conversationHistory}
+
+Based on this context, provide professional advice tailored to their situation.
+
+User: ${input}
+Assistant:`;
 
       const response = await hf.textGeneration({
         model: "mistralai/Mistral-7B-Instruct-v0.2",
-        inputs: `${systemContext}\n\nUser: ${input}\nAssistant:`,
+        inputs: systemContext,
         parameters: {
           max_new_tokens: 500,
           temperature: 0.7,
@@ -61,7 +73,7 @@ Based on this information, help the user prepare for their job application and i
 
       const assistantMessage: Message = {
         role: "assistant",
-        content: response.generated_text,
+        content: response.generated_text.trim(),
       };
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
@@ -84,7 +96,7 @@ Based on this information, help the user prepare for their job application and i
           <h1 className="text-4xl font-bold text-center">
             <span className="span-gradient-text">AI Recruitment Assistant</span>
           </h1>
-          <div className="w-5" /> {/* Spacer for alignment */}
+          <div className="w-5" />
         </div>
 
         <div className="bg-white/10 rounded-lg p-6 min-h-[500px] flex flex-col">
