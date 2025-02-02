@@ -113,14 +113,24 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
     <div className="relative">
       <div className="max-h-[74px] w-full p-6 rounded-lg bg-white/10 text-white border border-white/20 min-h-[70px] flex items-center justify-between">
         <div className="flex items-center justify-between w-full">
-          <div className="flex-1 mr-4">
+          <div className="flex-1 mr-4 relative">
             <input
               type="url"
-              placeholder="Paste job posting URL"
+              placeholder={currentStep || "Paste job posting URL"}
               className="w-full bg-transparent outline-none"
               value={url}
               onChange={handleUrlChange}
+              disabled={!!currentStep}
             />
+            {currentStep && (
+              <div className="absolute left-0 top-0 w-full">
+                <StatusMessage
+                  currentStep={currentStep}
+                  showFileUpload={showFileUpload}
+                  showViewButton={showViewButton}
+                />
+              </div>
+            )}
           </div>
           <div className="flex items-center space-x-2">
             {showLoad && (
@@ -139,11 +149,6 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
       </div>
 
       <div className="mt-4">
-        <StatusMessage
-          currentStep={currentStep}
-          showFileUpload={showFileUpload}
-          showViewButton={showViewButton}
-        />
         <ActionButtons
           showViewButton={showViewButton}
           showCoverLetter={showCoverLetter}
