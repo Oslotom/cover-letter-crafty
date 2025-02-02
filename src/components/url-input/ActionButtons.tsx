@@ -29,16 +29,16 @@ export const ActionButtons = ({
     });
   };
 
-  return (
-    <div className="flex items-center space-x-2">
-      {showViewButton && (
-        <>
-          <button
-            onClick={toggleCoverLetter}
-            className="px-6 h-[64px] bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg hover:opacity-90 transition"
-          >
-            {showCoverLetter ? 'Hide Cover Letter' : 'View Cover Letter'}
-          </button>
+  return showViewButton ? (
+    <div className="flex flex-col space-y-4 w-full">
+      <div className="flex items-center justify-between">
+        <button
+          onClick={toggleCoverLetter}
+          className="px-6 h-[64px] bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg hover:opacity-90 transition"
+        >
+          {showCoverLetter ? 'Hide Cover Letter' : 'View Cover Letter'}
+        </button>
+        <div className="flex items-center space-x-2">
           <button
             onClick={handleChatClick}
             className="px-6 h-[64px] bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg hover:opacity-90 transition flex items-center space-x-2"
@@ -53,8 +53,13 @@ export const ActionButtons = ({
             <Download className="w-4 h-4" />
             <span>Download</span>
           </button>
-        </>
+        </div>
+      </div>
+      {showCoverLetter && (
+        <div className="mt-4 p-6 bg-white/10 rounded-lg text-white">
+          <pre className="whitespace-pre-wrap font-sans">{cvContent}</pre>
+        </div>
       )}
     </div>
-  );
+  ) : null;
 };
