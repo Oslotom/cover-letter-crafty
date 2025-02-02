@@ -2,6 +2,10 @@ import { useState } from "react";
 import { HfInference } from "@huggingface/inference";
 import { Send, ArrowLeft } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { FileUpload } from "@/components/FileUpload";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Message {
   role: "user" | "assistant";
@@ -12,13 +16,19 @@ export default function AIChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [cvContent, setCvContent] = useState("");
+  const [jobUrl, setJobUrl] = useState("");
+  const [jobContent, setJobContent] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
-  const { cvContent, jobContent } = location.state || {};
+  const { toast } = useToast();
+  const locationState = location.state as { cvContent?: string; jobContent?: string } | null;
 
-  // Initialize chat with context if available
+  // Initialize chat with context if available from navigation
   useState(() => {
-    if (cvContent && jobContent) {
+    if (locationState?.cvContent && locationState?.jobContent) {
+      setCvContent(locationState.cvContent);
+      setJobContent(locationState.jobContent);
       const systemMessage: Message = {
         role: "assistant",
         content: "Hello! I'm your AI recruitment assistant. I have reviewed your resume and the job description. I can help you prepare for your application and interview. What would you like to know?",
@@ -27,9 +37,48 @@ export default function AIChat() {
     }
   });
 
+  const fetchJobContent = async (url: string) => {
+    try {
+      const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+      const data = await response.json();
+      
+      if (!data.contents) throw new Error('Failed to fetch URL content');
+      
+      const doc = new DOMParser().parseFromString(data.contents, 'text/html');
+      const scripts = doc.getElementsByTagName('script');
+      const styles = doc.getElementsByTagName('style');
+      [...scripts, ...styles].forEach(el => el.remove());
+      
+      const textContent = doc.body.textContent || '';
+      const cleanText = textContent.replace(/\s+/g, ' ').trim();
+      
+      setJobContent(cleanText);
+      toast({
+        title: "Success",
+        description: "Job description loaded successfully",
+      });
+    } catch (error) {
+      console.error('Error fetching URL:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch job description",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
+
+    if (!cvContent || !jobContent) {
+      toast({
+        title: "Missing context",
+        description: "Please provide both resume and job description",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const userMessage: Message = { role: "user", content: input };
     setMessages((prev) => [...prev, userMessage]);
@@ -39,7 +88,6 @@ export default function AIChat() {
     try {
       const hf = new HfInference("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");
       
-      // Include full conversation history and context in the prompt
       const conversationHistory = messages
         .map((msg) => `${msg.role === "user" ? "User" : "Assistant"}: ${msg.content}`)
         .join("\n");
@@ -47,10 +95,10 @@ export default function AIChat() {
       const systemContext = `You are a senior recruitment professional. Keep your responses concise (3-4 sentences) and always end with 2-3 relevant follow-up questions.
 
 Resume:
-${cvContent || "No resume provided"}
+${cvContent}
 
 Job Description:
-${jobContent || "No job description provided"}
+${jobContent}
 
 Previous conversation:
 ${conversationHistory}
@@ -78,6 +126,11 @@ Assistant:`;
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error("Error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate response",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -98,6 +151,24 @@ Assistant:`;
           </h1>
           <div className="w-5" />
         </div>
+
+        {!locationState && (
+          <div className="space-y-4 mb-8">
+            <FileUpload onFileContent={setCvContent} />
+            <div className="flex gap-2">
+              <Input
+                type="url"
+                placeholder="Paste job posting URL"
+                value={jobUrl}
+                onChange={(e) => setJobUrl(e.target.value)}
+                className="flex-1"
+              />
+              <Button onClick={() => fetchJobContent(jobUrl)} disabled={!jobUrl}>
+                Load Job
+              </Button>
+            </div>
+          </div>
+        )}
 
         <div className="bg-white/10 rounded-lg p-6 min-h-[500px] flex flex-col">
           <div className="flex-1 overflow-y-auto space-y-4 mb-4">
