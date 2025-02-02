@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react';
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Upload } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 interface FileUploadProps {
   onFileContent: (content: string) => void;
@@ -92,7 +92,6 @@ export const FileUpload = ({ onFileContent }: FileUploadProps) => {
               Drag and drop your CV text file here or click to browse
             </p>
             <Button variant="outline" size="sm">
-              <Upload className="mr-2 h-4 w-4" />
               Choose File
             </Button>
           </div>
