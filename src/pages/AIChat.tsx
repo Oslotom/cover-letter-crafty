@@ -1,19 +1,72 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { HfInference } from "@huggingface/inference";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface Message {
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "system";
   content: string;
+}
+
+interface Context {
+  cv: string | null;
+  job: string | null;
 }
 
 export default function AIChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [context, setContext] = useState<Context>({ cv: null, job: null });
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchContext = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please login to use the chat feature",
+          variant: "destructive",
+        });
+        navigate('/');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select('cv_content, job_content')
+        .eq('user_id', user.id)
+        .eq('role', 'system')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error || !data) {
+        toast({
+          title: "Context not found",
+          description: "Please upload your CV and job description first",
+          variant: "destructive",
+        });
+        navigate('/');
+        return;
+      }
+
+      setContext({
+        cv: data.cv_content,
+        job: data.job_content
+      });
+    };
+
+    fetchContext();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,9 +79,23 @@ export default function AIChat() {
 
     try {
       const hf = new HfInference("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");
+      
+      const prompt = `Given the following context:
+
+Resume:
+${context.cv}
+
+Job Description:
+${context.job}
+
+Please help answer this question about the job application:
+${input}
+
+Provide a clear and concise response based on both the resume and job description context.`;
+
       const response = await hf.textGeneration({
         model: "mistralai/Mistral-7B-Instruct-v0.3",
-        inputs: input,
+        inputs: prompt,
         parameters: {
           max_new_tokens: 250,
           temperature: 0.7,
@@ -39,11 +106,34 @@ export default function AIChat() {
 
       const assistantMessage: Message = {
         role: "assistant",
-        content: response.generated_text,
+        content: response.generated_text.trim(),
       };
+      
+      // Store the conversation in Supabase
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from('chat_messages').insert([
+          {
+            user_id: user.id,
+            message: input,
+            role: "user"
+          },
+          {
+            user_id: user.id,
+            message: assistantMessage.content,
+            role: "assistant"
+          }
+        ]);
+      }
+
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error("Error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to get AI response",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }

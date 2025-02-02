@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { FileText, Loader2, Download, MessageSquare } from 'lucide-react';
 import { HfInference } from '@huggingface/inference';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from './ui/use-toast';
 
 interface UrlInputProps {
   onUrlContent: (content: string) => void;
@@ -9,6 +11,7 @@ interface UrlInputProps {
 
 export function UrlInput({ onUrlContent }: UrlInputProps) {
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   const [url, setUrl] = useState('');
   const [showLoad, setShowLoad] = useState(false);
@@ -106,6 +109,51 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
       console.error('Error reading file:', error);
       setCurrentStep('Error processing file');
       setShowFileUpload(true);
+    }
+  };
+
+  const navigateToChat = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please login to use the chat feature",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Store context in chat_messages
+      const { error } = await supabase.from('chat_messages').insert([
+        {
+          user_id: user.id,
+          cv_content: cvContent,
+          job_content: jobContent,
+          message: "Context initialized",
+          role: "system"
+        }
+      ]);
+
+      if (error) {
+        console.error('Error storing context:', error);
+        toast({
+          title: "Error",
+          description: "Failed to store context for chat",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      navigate('/chat');
+    } catch (error) {
+      console.error('Error navigating to chat:', error);
+      toast({
+        title: "Error",
+        description: "Something went wrong",
+        variant: "destructive",
+      });
     }
   };
 
@@ -254,7 +302,7 @@ ${truncatedJob}
         <div className="mt-4 p-6 bg-white/10 rounded-lg text-white">
           <div className="flex justify-end mb-4 space-x-4">
             <button
-              onClick={() => navigate('/chat')}
+              onClick={navigateToChat}
               className="px-6 h-[64px] bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg hover:opacity-90 transition flex items-center space-x-2"
             >
               <MessageSquare className="w-4 h-4" />
