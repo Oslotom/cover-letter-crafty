@@ -125,16 +125,25 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
         return;
       }
 
-      // Store context in chat_messages
-      const { error } = await supabase.from('chat_messages').insert([
-        {
-          user_id: user.id,
-          cv_content: cvContent,
-          job_content: jobContent,
-          message: "Context initialized",
-          role: "system"
-        }
-      ]);
+      // Delete any existing context for this user
+      await supabase
+        .from('chat_messages')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('role', 'system');
+
+      // Store new context in chat_messages
+      const { error } = await supabase
+        .from('chat_messages')
+        .insert([
+          {
+            user_id: user.id,
+            cv_content: cvContent,
+            job_content: jobContent,
+            message: "Context initialized",
+            role: "system"
+          }
+        ]);
 
       if (error) {
         console.error('Error storing context:', error);
