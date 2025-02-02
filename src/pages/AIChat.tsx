@@ -26,15 +26,9 @@ export default function AIChat() {
 
     try {
       const hf = new HfInference("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");
-      const prompt = `<|system|>You are a helpful AI assistant. Respond to the user's message in a clear and concise way.
-
-<|user|>${input}
-
-<|assistant|>`;
-      
       const response = await hf.textGeneration({
-        model: "mistralai/Mistral-7B-Instruct-v0.2",
-        inputs: prompt,
+        model: "mistralai/Mistral-7B-Instruct-v0.3",
+        inputs: input,
         parameters: {
           max_new_tokens: 250,
           temperature: 0.7,
@@ -56,57 +50,59 @@ export default function AIChat() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-[#1a242f] to-[#222f3a] dark:from-white dark:to-gray-100">
       <Header />
-      
-      <main className="flex-1 container max-w-4xl mx-auto p-4 pt-24">
-        <div className="space-y-4 mb-4">
+      <main className="container max-w-4xl mx-auto p-4 pt-24">
+        <div className="space-y-4 mb-4 h-[calc(100vh-16rem)] overflow-y-auto">
           {messages.map((message, index) => (
             <div
               key={index}
               className={cn(
-                "flex gap-3 p-4 rounded-lg",
-                message.role === "assistant" 
-                  ? "bg-muted" 
-                  : "bg-primary text-primary-foreground"
+                "flex gap-3 p-4 rounded-lg max-w-3xl mx-auto",
+                message.role === "assistant"
+                  ? "bg-gray-800/50 dark:bg-white/50"
+                  : "bg-blue-600/50 dark:bg-blue-100/50"
               )}
             >
               <div className="flex-1 space-y-2">
-                <div className="font-medium">
+                <div className="font-medium text-white dark:text-gray-800">
                   {message.role === "assistant" ? "AI Assistant" : "You"}
                 </div>
-                <div className="text-sm">{message.content}</div>
+                <div className="text-sm text-gray-100 dark:text-gray-700">
+                  {message.content}
+                </div>
               </div>
             </div>
           ))}
-          
+
           {isLoading && (
-            <div className="flex gap-3 p-4 rounded-lg bg-muted animate-pulse">
+            <div className="flex gap-3 p-4 rounded-lg bg-gray-800/50 dark:bg-white/50 max-w-3xl mx-auto">
               <div className="flex-1 space-y-2">
-                <div className="font-medium">AI Assistant</div>
+                <div className="font-medium text-white dark:text-gray-800">AI Assistant</div>
                 <div className="flex space-x-2">
-                  <div className="w-2 h-2 bg-foreground rounded-full animate-bounce" />
-                  <div className="w-2 h-2 bg-foreground rounded-full animate-bounce [animation-delay:0.2s]" />
-                  <div className="w-2 h-2 bg-foreground rounded-full animate-bounce [animation-delay:0.4s]" />
+                  <div className="w-2 h-2 bg-white dark:bg-gray-800 rounded-full animate-bounce" />
+                  <div className="w-2 h-2 bg-white dark:bg-gray-800 rounded-full animate-bounce [animation-delay:0.2s]" />
+                  <div className="w-2 h-2 bg-white dark:bg-gray-800 rounded-full animate-bounce [animation-delay:0.4s]" />
                 </div>
               </div>
             </div>
           )}
         </div>
 
-        <form onSubmit={handleSubmit} className="sticky bottom-4">
-          <div className="flex gap-2 items-center bg-background border rounded-lg p-2">
+        <form onSubmit={handleSubmit} className="sticky bottom-4 max-w-3xl mx-auto">
+          <div className="flex gap-2 items-center bg-gray-800/50 dark:bg-white/50 backdrop-blur-sm border border-gray-700/50 dark:border-gray-300/50 rounded-lg p-2">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type your message..."
-              className="flex-1 bg-transparent border-0 focus:outline-none focus:ring-0 text-foreground"
+              className="flex-1 bg-transparent border-0 focus:outline-none focus:ring-0 text-white dark:text-gray-800 placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
             <Button 
               type="submit" 
               size="icon"
               disabled={isLoading}
+              className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-100 dark:hover:bg-blue-200"
             >
               <Send className="w-4 h-4" />
             </Button>
