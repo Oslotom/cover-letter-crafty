@@ -10,21 +10,25 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   plugins: [
-    react(),
+    react({
+      jsxRuntime: 'automatic',
+    }),
     mode === 'development' &&
     componentTagger(),
   ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "react": path.resolve(__dirname, "./node_modules/react"),
     },
   },
   optimizeDeps: {
-    include: ['pdfjs-dist']
+    include: ['pdfjs-dist', 'react', 'react-dom', 'react-router-dom']
   },
   build: {
     commonjsOptions: {
-      include: [/pdfjs-dist/]
+      include: [/pdfjs-dist/, /node_modules/],
+      transformMixedEsModules: true
     }
   }
 }));
