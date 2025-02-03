@@ -57,18 +57,10 @@ export const useChat = () => {
 
   const handleFileContent = (content: string) => {
     setCvContent(content);
-    toast({
-      title: "Success",
-      description: "Resume uploaded successfully",
-    });
   };
 
   const handleUrlContent = (content: string) => {
     setJobContent(content);
-    toast({
-      title: "Success",
-      description: "Job description loaded successfully",
-    });
   };
 
   return {

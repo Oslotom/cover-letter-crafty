@@ -25,9 +25,11 @@ const Chat = () => {
             <p className="text-white">Chat with our AI assistant about job postings and resumes</p>
           </div>
           
-          <div className="space-y-4">
-            <FileUpload onFileContent={handleFileContent} />
-            <UrlInput onUrlContent={handleUrlContent} />
+          <div className="flex flex-col space-y-4">
+            <div className="flex items-center space-x-4">
+              <FileUpload onFileContent={handleFileContent} />
+              <UrlInput onUrlContent={handleUrlContent} />
+            </div>
           </div>
 
           <div className="bg-white/10 rounded-lg p-6 min-h-[500px] flex flex-col">

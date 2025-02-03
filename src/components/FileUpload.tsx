@@ -1,51 +1,69 @@
-import { useState, useCallback } from 'react';
-import { useToast } from "@/components/ui/use-toast";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Loader2, Upload, CheckSquare } from "lucide-react";
+import { useState } from 'react';
+import { FileText, Check } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from './ui/use-toast';
+import * as pdfjs from 'pdfjs-dist';
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 interface FileUploadProps {
   onFileContent: (content: string) => void;
 }
 
-export const FileUpload = ({ onFileContent }: FileUploadProps) => {
-  const [isDragging, setIsDragging] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+export function FileUpload({ onFileContent }: FileUploadProps) {
   const [isUploaded, setIsUploaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleFile = async (file: File) => {
+  const extractTextFromPDF = async (file: ArrayBuffer): Promise<string> => {
+    const pdf = await pdfjs.getDocument({ data: file }).promise;
+    let fullText = '';
+    
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items
+        .map((item: any) => item.str)
+        .join(' ');
+      fullText += pageText + ' ';
+    }
+    
+    return fullText.trim();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
     if (file.type !== 'application/pdf' && file.type !== 'text/plain') {
       toast({
-        title: "Invalid file type",
+        title: "Error",
         description: "Please upload a PDF or text file",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
 
     setIsLoading(true);
     try {
-      if (file.type === 'text/plain') {
-        const text = await file.text();
-        onFileContent(text.trim());
-      } else {
-        const formData = new FormData();
-        formData.append('file', file);
-
-        const response = await fetch('/api/process-pdf', {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to process PDF');
-        }
-
-        const data = await response.json();
-        onFileContent(data.text);
-      }
+      let content: string;
       
+      if (file.type === 'application/pdf') {
+        const arrayBuffer = await file.arrayBuffer();
+        content = await extractTextFromPDF(arrayBuffer);
+      } else {
+        content = await file.text();
+      }
+
+      // Upload file to Supabase Storage
+      const fileName = `${Date.now()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from('pdfs')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      onFileContent(content);
       setIsUploaded(true);
       toast({
         title: "Success",
@@ -56,75 +74,37 @@ export const FileUpload = ({ onFileContent }: FileUploadProps) => {
       toast({
         title: "Error",
         description: "Failed to process file",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const onDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    
-    const file = e.dataTransfer.files[0];
-    if (file) handleFile(file);
-  }, []);
-
-  const onDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  }, []);
-
-  const onDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-  }, []);
-
   return (
-    <Card
-      className={`p-2 border-2 border-dashed ${
-        isDragging ? 'border-primary bg-primary/5' : 'border-border'
-      } rounded-lg cursor-pointer transition-colors`}
-      onDrop={onDrop}
-      onDragOver={onDragOver}
-      onDragLeave={onDragLeave}
-    >
+    <div className="relative">
       <input
         type="file"
-        accept=".txt,.pdf"
+        onChange={handleFileChange}
         className="hidden"
         id="file-upload"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) handleFile(file);
-        }}
+        accept=".pdf,.txt"
       />
       <label
         htmlFor="file-upload"
-        className="flex items-center justify-center gap-2 cursor-pointer"
+        className={`inline-flex items-center space-x-2 px-4 py-2 rounded-lg 
+          ${isUploaded 
+            ? 'bg-green-500 hover:bg-green-600' 
+            : 'bg-blue-500 hover:bg-blue-600'} 
+          text-white cursor-pointer transition-colors`}
       >
-        {isLoading ? (
-          <Button variant="outline" size="sm" disabled>
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Uploading...</span>
-          </Button>
+        {isUploaded ? (
+          <Check className="w-4 h-4" />
         ) : (
-          <Button variant="outline" size="sm">
-            {isUploaded ? (
-              <>
-                <CheckSquare className="h-4 w-4" />
-                <span>Resume Uploaded</span>
-              </>
-            ) : (
-              <>
-                <Upload className="h-4 w-4" />
-                <span>Upload Resume (PDF/TXT)</span>
-              </>
-            )}
-          </Button>
+          <FileText className="w-4 h-4" />
         )}
+        <span>{isLoading ? 'Processing...' : 'Upload Resume'}</span>
       </label>
-    </Card>
+    </div>
   );
-};
+}
