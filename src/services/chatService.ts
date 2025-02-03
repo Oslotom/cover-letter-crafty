@@ -9,13 +9,14 @@ export interface Message {
   message: string;
   cv_content?: string | null;
   job_content?: string | null;
+  content_type?: string | null;
 }
 
 export const chatService = {
   async processMessage(message: string, cvContent: string | null, jobContent: string | null): Promise<string> {
     const context = `
-      ${cvContent ? `Resume Context: ${truncateText(cvContent)}` : ''}
-      ${jobContent ? `Job Description Context: ${truncateText(jobContent)}` : ''}
+      ${cvContent ? `Resume Content: ${truncateText(cvContent)}` : ''}
+      ${jobContent ? `Job Description: ${truncateText(jobContent)}` : ''}
     `;
 
     const prompt = `Given this context: ${context}

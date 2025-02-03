@@ -15,10 +15,10 @@ export const FileUpload = ({ onFileContent }: FileUploadProps) => {
   const { toast } = useToast();
 
   const handleFile = async (file: File) => {
-    if (file.type !== 'text/plain') {
+    if (file.type !== 'application/pdf' && file.type !== 'text/plain') {
       toast({
         title: "Invalid file type",
-        description: "Please upload a text file",
+        description: "Please upload a PDF or text file",
         variant: "destructive",
       });
       return;
@@ -26,14 +26,36 @@ export const FileUpload = ({ onFileContent }: FileUploadProps) => {
 
     setIsLoading(true);
     try {
-      const text = await file.text();
-      onFileContent(text.trim());
+      if (file.type === 'text/plain') {
+        const text = await file.text();
+        onFileContent(text.trim());
+      } else {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch('/api/process-pdf', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to process PDF');
+        }
+
+        const data = await response.json();
+        onFileContent(data.text);
+      }
+      
       setIsUploaded(true);
+      toast({
+        title: "Success",
+        description: "Resume uploaded successfully",
+      });
     } catch (error) {
-      console.error('Error processing text file:', error);
+      console.error('Error processing file:', error);
       toast({
         title: "Error",
-        description: "Failed to process text file",
+        description: "Failed to process file",
         variant: "destructive",
       });
     } finally {
@@ -70,7 +92,7 @@ export const FileUpload = ({ onFileContent }: FileUploadProps) => {
     >
       <input
         type="file"
-        accept=".txt"
+        accept=".txt,.pdf"
         className="hidden"
         id="file-upload"
         onChange={(e) => {
@@ -97,7 +119,7 @@ export const FileUpload = ({ onFileContent }: FileUploadProps) => {
             ) : (
               <>
                 <Upload className="h-4 w-4" />
-                <span>Upload Resume</span>
+                <span>Upload Resume (PDF/TXT)</span>
               </>
             )}
           </Button>
