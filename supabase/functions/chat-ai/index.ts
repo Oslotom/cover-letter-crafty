@@ -1,6 +1,5 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { HfInference } from 'npm:@huggingface/inference';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,7 +18,7 @@ serve(async (req) => {
       .map((msg: any) => `${msg.role === "user" ? "User" : "Assistant"}: ${msg.content}`)
       .join("\n");
 
-    const prompt = `You are a senior recruitment professional. Keep your responses concise (3-4 sentences) and always end with 2-3 relevant follow-up questions.
+    const systemContext = `You are a senior recruitment professional. Keep your responses concise (3-4 sentences) and always end with 2-3 relevant follow-up questions.
 
 Resume:
 ${cvContent}
@@ -35,32 +34,34 @@ Based on this context, provide professional advice tailored to their situation.
 User: ${newMessage}
 Assistant:`;
 
-    const hf = new HfInference("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");
-    
-    const response = await hf.textGeneration({
-      model: 'mistralai/Mistral-7B-Instruct-v0.2',
-      inputs: prompt,
-      parameters: {
-        max_new_tokens: 400,
-        temperature: 0.7,
-        top_p: 0.9,
-        repetition_penalty: 1.1,
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Content-Type': 'application/json',
       },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemContext },
+        ],
+      }),
     });
 
+    const data = await response.json();
+    const message = data.choices[0].message.content;
+
     return new Response(
-      JSON.stringify({ message: response.generated_text.trim() }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      JSON.stringify({ message }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error in chat-ai function:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   }
