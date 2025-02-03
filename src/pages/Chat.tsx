@@ -4,7 +4,6 @@ import { ChatInput } from '@/components/chat/ChatInput';
 import { MessageList } from '@/components/chat/MessageList';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
-import { Loader2 } from 'lucide-react';
 import { HfInference } from '@huggingface/inference';
 
 interface Message {
@@ -20,8 +19,20 @@ const hf = new HfInference("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");
 const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [jobContent, setJobContent] = useState<string | null>(null);
+  const [cvContent, setCvContent] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Initialize with welcome message
+    setMessages([
+      {
+        role: 'assistant',
+        message: 'Hello! Please share a link to the job description you\'d like to discuss, or upload your resume so I can assist you better.'
+      }
+    ]);
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -32,7 +43,7 @@ const Chat = () => {
   }, [messages]);
 
   const truncateText = (text: string) => {
-    const maxChars = 4000; // Approximate character limit to stay under token limit
+    const maxChars = 4000;
     return text.length > maxChars ? text.slice(0, maxChars) + '...' : text;
   };
 
@@ -44,7 +55,7 @@ const Chat = () => {
       const userMessage: Message = { role: 'user', message };
       setMessages(prev => [...prev, userMessage]);
 
-      let jobContent = null;
+      let newJobContent = jobContent;
       
       if (message.startsWith('http')) {
         const response = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(message));
@@ -52,7 +63,8 @@ const Chat = () => {
         if (data.contents) {
           const parser = new DOMParser();
           const doc = parser.parseFromString(data.contents, 'text/html');
-          jobContent = doc.body.textContent?.trim();
+          newJobContent = doc.body.textContent?.trim() || null;
+          setJobContent(newJobContent);
         }
       }
 
@@ -61,21 +73,30 @@ const Chat = () => {
         .insert([{
           role: 'user',
           message: message,
-          job_content: jobContent,
+          job_content: newJobContent,
+          cv_content: cvContent,
           user_id: (await supabase.auth.getUser()).data.user?.id
         }])
         .select();
 
       if (chatError) throw chatError;
 
-      const truncatedContent = jobContent ? truncateText(jobContent) : message;
-      const prompt = jobContent ? 
-        `Analyze this content and provide insights: ${truncatedContent}` : 
-        truncatedContent;
+      // Construct context-aware prompt
+      let prompt = `You are a helpful AI assistant specializing in career advice and job applications. `;
+      
+      if (cvContent) {
+        prompt += `\nContext - Resume: ${truncateText(cvContent)}`;
+      }
+      
+      if (newJobContent) {
+        prompt += `\nContext - Job Description: ${truncateText(newJobContent)}`;
+      }
+      
+      prompt += `\nUser Message: ${message}\n\nPlease provide a helpful response based on the available context. Focus on career advice and job-specific insights if context is available.`;
 
       const aiResponse = await hf.textGeneration({
         model: 'mistralai/Mistral-7B-Instruct-v0.3',
-        inputs: prompt,
+        inputs: truncateText(prompt),
         parameters: {
           max_new_tokens: 400,
           temperature: 0.7,
@@ -91,7 +112,8 @@ const Chat = () => {
         .insert([{
           role: 'assistant',
           message: aiMessage,
-          job_content: jobContent,
+          job_content: newJobContent,
+          cv_content: cvContent,
           user_id: (await supabase.auth.getUser()).data.user?.id
         }]);
 
@@ -113,6 +135,8 @@ const Chat = () => {
   const handleFileContent = async (content: string) => {
     try {
       setIsLoading(true);
+      setCvContent(content);
+      
       const { data: { user } } = await supabase.auth.getUser();
       
       const { error: chatError } = await supabase
@@ -126,11 +150,11 @@ const Chat = () => {
 
       if (chatError) throw chatError;
 
-      const truncatedContent = truncateText(content);
+      const prompt = `You are a helpful AI assistant specializing in career advice. Please analyze this resume and provide insights about the candidate's profile: ${truncateText(content)}`;
       
       const aiResponse = await hf.textGeneration({
         model: 'mistralai/Mistral-7B-Instruct-v0.3',
-        inputs: `Analyze this resume and provide insights: ${truncatedContent}`,
+        inputs: prompt,
         parameters: {
           max_new_tokens: 400,
           temperature: 0.7,
