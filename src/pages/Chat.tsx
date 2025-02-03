@@ -31,6 +31,11 @@ const Chat = () => {
     scrollToBottom();
   }, [messages]);
 
+  const truncateText = (text: string) => {
+    const maxChars = 4000; // Approximate character limit to stay under token limit
+    return text.length > maxChars ? text.slice(0, maxChars) + '...' : text;
+  };
+
   const handleSendMessage = async (message: string) => {
     if (!message.trim()) return;
 
@@ -63,13 +68,16 @@ const Chat = () => {
 
       if (chatError) throw chatError;
 
+      const truncatedContent = jobContent ? truncateText(jobContent) : message;
+      const prompt = jobContent ? 
+        `Analyze this content and provide insights: ${truncatedContent}` : 
+        truncatedContent;
+
       const aiResponse = await hf.textGeneration({
         model: 'mistralai/Mistral-7B-Instruct-v0.3',
-        inputs: jobContent ? 
-          `Analyze this content and provide insights: ${jobContent}` : 
-          message,
+        inputs: prompt,
         parameters: {
-          max_new_tokens: 500,
+          max_new_tokens: 400,
           temperature: 0.7,
           top_p: 0.95,
           do_sample: true
@@ -118,11 +126,13 @@ const Chat = () => {
 
       if (chatError) throw chatError;
 
+      const truncatedContent = truncateText(content);
+      
       const aiResponse = await hf.textGeneration({
         model: 'mistralai/Mistral-7B-Instruct-v0.3',
-        inputs: `Analyze this resume and provide insights: ${content}`,
+        inputs: `Analyze this resume and provide insights: ${truncatedContent}`,
         parameters: {
-          max_new_tokens: 500,
+          max_new_tokens: 400,
           temperature: 0.7,
           top_p: 0.95,
           do_sample: true
