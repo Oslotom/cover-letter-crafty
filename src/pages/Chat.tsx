@@ -46,6 +46,27 @@ const Chat = () => {
     return text.length > maxChars ? text.slice(0, maxChars) + '...' : text;
   };
 
+  const cleanAIResponse = (text: string): string => {
+    // Remove any system messages or technical artifacts
+    let cleaned = text
+      .replace(/You are.*?assistant\./g, '')
+      .replace(/Based on the.*?below/g, '')
+      .replace(/Resume:[\s\S]*?Job Description:/g, '')
+      .replace(/Job Description:[\s\S]*/g, '')
+      .replace(/\[.*?\]/g, '')
+      .replace(/```.*?```/g, '')
+      .replace(/\{.*?\}/g, '')
+      .trim();
+
+    // If the response starts with quotes, remove them
+    cleaned = cleaned.replace(/^["']|["']$/g, '').trim();
+    
+    // Remove any remaining technical artifacts
+    cleaned = cleaned.replace(/^Assistant:|^Human:/g, '').trim();
+    
+    return cleaned;
+  };
+
   const handleSendMessage = async (message: string) => {
     if (!message.trim()) return;
 
@@ -83,13 +104,9 @@ const Chat = () => {
       let prompt = '';
       
       if (message.startsWith('http') && cvContent && newJobContent) {
-        prompt = `You are a career advisor. Based on the resume and job description below, provide a very brief insight (max 50 words) about the match. Start with "Thanks for sharing! Here's a quick insight:" and focus only on the most important match or mismatch.
-
-Resume: ${truncateText(cvContent)}
-
-Job Description: ${truncateText(newJobContent)}`;
+        prompt = `Thanks for sharing! Here's a quick insight about the match between your resume and this job (max 50 words): ${truncateText(cvContent)} ${truncateText(newJobContent)}`;
       } else {
-        prompt = `You are a helpful career advisor. Provide a brief response (max 50 words) to: ${message}`;
+        prompt = `Provide a brief response (max 50 words) to: ${message}`;
       }
 
       const aiResponse = await hf.textGeneration({
@@ -103,17 +120,7 @@ Job Description: ${truncateText(newJobContent)}`;
         }
       });
 
-      let cleanedResponse = aiResponse.generated_text
-        .replace(/Resume:[\s\S]*?Job Description:/g, '')
-        .replace(/Job Description:[\s\S]*/g, '')
-        .trim();
-
-      // Further clean up any remaining technical text
-      cleanedResponse = cleanedResponse
-        .replace(/\[.*?\]/g, '')
-        .replace(/```.*?```/g, '')
-        .replace(/\{.*?\}/g, '')
-        .trim();
+      const cleanedResponse = cleanAIResponse(aiResponse.generated_text);
 
       const { error: assistantError } = await supabase
         .from('chat_messages')
@@ -158,7 +165,7 @@ Job Description: ${truncateText(newJobContent)}`;
 
       if (chatError) throw chatError;
 
-      const prompt = `You are a career advisor. Provide a very brief analysis (max 50 words) of this resume, focusing on the key strengths: ${truncateText(content)}`;
+      const prompt = `Provide a very brief analysis (max 50 words) of the key strengths in this resume: ${truncateText(content)}`;
       
       const aiResponse = await hf.textGeneration({
         model: 'mistralai/Mistral-7B-Instruct-v0.3',
@@ -171,12 +178,7 @@ Job Description: ${truncateText(newJobContent)}`;
         }
       });
 
-      let cleanedResponse = aiResponse.generated_text
-        .replace(/Resume:[\s\S]*/g, '')
-        .replace(/\[.*?\]/g, '')
-        .replace(/```.*?```/g, '')
-        .replace(/\{.*?\}/g, '')
-        .trim();
+      const cleanedResponse = cleanAIResponse(aiResponse.generated_text);
 
       const { error: assistantError } = await supabase
         .from('chat_messages')
