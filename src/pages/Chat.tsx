@@ -5,6 +5,7 @@ import { MessageList } from '@/components/chat/MessageList';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
+import { HfInference } from '@huggingface/inference';
 
 interface Message {
   id?: string;
@@ -13,6 +14,8 @@ interface Message {
   cv_content?: string | null;
   job_content?: string | null;
 }
+
+const hf = new HfInference("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");
 
 const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -36,10 +39,10 @@ const Chat = () => {
       const userMessage: Message = { role: 'user', message };
       setMessages(prev => [...prev, userMessage]);
 
-      const response = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(message));
       let jobContent = null;
       
       if (message.startsWith('http')) {
+        const response = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(message));
         const data = await response.json();
         if (data.contents) {
           const parser = new DOMParser();
@@ -60,27 +63,20 @@ const Chat = () => {
 
       if (chatError) throw chatError;
 
-      const aiResponse = await fetch('https://api.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer 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'
-        },
-        body: JSON.stringify({
-          inputs: jobContent ? 
-            `Analyze this content and provide insights: ${jobContent}` : 
-            message,
-          parameters: {
-            max_new_tokens: 500,
-            temperature: 0.7,
-            top_p: 0.95,
-            do_sample: true
-          }
-        })
+      const aiResponse = await hf.textGeneration({
+        model: 'mistralai/Mistral-7B-Instruct-v0.3',
+        inputs: jobContent ? 
+          `Analyze this content and provide insights: ${jobContent}` : 
+          message,
+        parameters: {
+          max_new_tokens: 500,
+          temperature: 0.7,
+          top_p: 0.95,
+          do_sample: true
+        }
       });
 
-      const aiData = await aiResponse.json();
-      const aiMessage = aiData.generated_text;
+      const aiMessage = aiResponse.generated_text;
 
       const { error: assistantError } = await supabase
         .from('chat_messages')
@@ -122,25 +118,18 @@ const Chat = () => {
 
       if (chatError) throw chatError;
 
-      const aiResponse = await fetch('https://api.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer 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'
-        },
-        body: JSON.stringify({
-          inputs: `Analyze this resume and provide insights: ${content}`,
-          parameters: {
-            max_new_tokens: 500,
-            temperature: 0.7,
-            top_p: 0.95,
-            do_sample: true
-          }
-        })
+      const aiResponse = await hf.textGeneration({
+        model: 'mistralai/Mistral-7B-Instruct-v0.3',
+        inputs: `Analyze this resume and provide insights: ${content}`,
+        parameters: {
+          max_new_tokens: 500,
+          temperature: 0.7,
+          top_p: 0.95,
+          do_sample: true
+        }
       });
 
-      const aiData = await aiResponse.json();
-      const aiMessage = aiData.generated_text;
+      const aiMessage = aiResponse.generated_text;
 
       const { error: assistantError } = await supabase
         .from('chat_messages')
