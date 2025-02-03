@@ -5,7 +5,6 @@ import { cleanAIResponse, truncateText } from '@/utils/chatUtils';
 const hf = new HfInference("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");
 
 export interface Message {
-  id?: string;
   role: 'user' | 'assistant';
   message: string;
   cv_content?: string | null;
@@ -14,42 +13,18 @@ export interface Message {
 
 export const chatService = {
   async processMessage(message: string, cvContent: string | null, jobContent: string | null): Promise<string> {
-    let newJobContent = jobContent;
-    
-    if (message.startsWith('http')) {
-      const response = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(message));
-      const data = await response.json();
-      if (data.contents) {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(data.contents, 'text/html');
-        newJobContent = doc.body.textContent?.trim() || null;
-      }
-    }
+    const context = `
+      ${cvContent ? `Resume Context: ${truncateText(cvContent)}` : ''}
+      ${jobContent ? `Job Description Context: ${truncateText(jobContent)}` : ''}
+    `;
 
-    const prompt = message.startsWith('http') && cvContent && newJobContent
-      ? `Thanks for sharing! Here's a quick insight about the match between your resume and this job (max 50 words): ${truncateText(cvContent)} ${truncateText(newJobContent)}`
-      : `Provide a brief response (max 50 words) to: ${message}`;
+    const prompt = `Given this context: ${context}
+    
+    Provide a brief, focused response (max 50 words) to this message: ${message}`;
 
     const aiResponse = await hf.textGeneration({
       model: 'mistralai/Mistral-7B-Instruct-v0.3',
       inputs: truncateText(prompt),
-      parameters: {
-        max_new_tokens: 100,
-        temperature: 0.7,
-        top_p: 0.95,
-        do_sample: true
-      }
-    });
-
-    return cleanAIResponse(aiResponse.generated_text);
-  },
-
-  async processResume(content: string): Promise<string> {
-    const prompt = `Provide a very brief analysis (max 50 words) of the key strengths in this resume: ${truncateText(content)}`;
-    
-    const aiResponse = await hf.textGeneration({
-      model: 'mistralai/Mistral-7B-Instruct-v0.3',
-      inputs: prompt,
       parameters: {
         max_new_tokens: 100,
         temperature: 0.7,

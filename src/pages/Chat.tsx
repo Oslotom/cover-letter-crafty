@@ -1,4 +1,5 @@
 import { FileUpload } from '@/components/FileUpload';
+import { UrlInput } from '@/components/UrlInput';
 import { ChatInput } from '@/components/chat/ChatInput';
 import { MessageList } from '@/components/chat/MessageList';
 import { useChat } from '@/hooks/useChat';
@@ -9,6 +10,7 @@ const Chat = () => {
     isLoading,
     handleSendMessage,
     handleFileContent,
+    handleUrlContent,
     messagesEndRef
   } = useChat();
 
@@ -23,16 +25,18 @@ const Chat = () => {
             <p className="text-white">Chat with our AI assistant about job postings and resumes</p>
           </div>
           
+          <div className="space-y-4">
+            <FileUpload onFileContent={handleFileContent} />
+            <UrlInput onUrlContent={handleUrlContent} />
+          </div>
+
           <div className="bg-white/10 rounded-lg p-6 min-h-[500px] flex flex-col">
             <div className="flex-1 overflow-y-auto space-y-4 mb-4">
               <MessageList messages={messages} />
               <div ref={messagesEndRef} />
             </div>
             
-            <div className="space-y-4">
-              <FileUpload onFileContent={handleFileContent} />
-              <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
-            </div>
+            <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
           </div>
         </div>
       </div>

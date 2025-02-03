@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload, CheckSquare } from "lucide-react";
 
 interface FileUploadProps {
   onFileContent: (content: string) => void;
@@ -11,6 +11,7 @@ interface FileUploadProps {
 export const FileUpload = ({ onFileContent }: FileUploadProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploaded, setIsUploaded] = useState(false);
   const { toast } = useToast();
 
   const handleFile = async (file: File) => {
@@ -27,10 +28,7 @@ export const FileUpload = ({ onFileContent }: FileUploadProps) => {
     try {
       const text = await file.text();
       onFileContent(text.trim());
-      toast({
-        title: "Success",
-        description: "CV uploaded successfully",
-      });
+      setIsUploaded(true);
     } catch (error) {
       console.error('Error processing text file:', error);
       toast({
@@ -63,7 +61,7 @@ export const FileUpload = ({ onFileContent }: FileUploadProps) => {
 
   return (
     <Card
-      className={`p-6 border-2 border-dashed ${
+      className={`p-2 border-2 border-dashed ${
         isDragging ? 'border-primary bg-primary/5' : 'border-border'
       } rounded-lg cursor-pointer transition-colors`}
       onDrop={onDrop}
@@ -82,19 +80,27 @@ export const FileUpload = ({ onFileContent }: FileUploadProps) => {
       />
       <label
         htmlFor="file-upload"
-        className="flex flex-col items-center justify-center gap-2 cursor-pointer"
+        className="flex items-center justify-center gap-2 cursor-pointer"
       >
         {isLoading ? (
-          <Loader2 className="h-6 w-6 animate-spin" />
+          <Button variant="outline" size="sm" disabled>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Uploading...</span>
+          </Button>
         ) : (
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground mb-2">
-              Drag and drop your CV text file here or click to browse
-            </p>
-            <Button variant="outline" size="sm">
-              Choose File
-            </Button>
-          </div>
+          <Button variant="outline" size="sm">
+            {isUploaded ? (
+              <>
+                <CheckSquare className="h-4 w-4" />
+                <span>Resume Uploaded</span>
+              </>
+            ) : (
+              <>
+                <Upload className="h-4 w-4" />
+                <span>Upload Resume</span>
+              </>
+            )}
+          </Button>
         )}
       </label>
     </Card>

@@ -35,21 +35,13 @@ export const useChat = () => {
       const userMessage: Message = { role: 'user', message };
       setMessages(prev => [...prev, userMessage]);
 
-      await chatService.saveMessage(userMessage);
-
       const response = await chatService.processMessage(message, cvContent, jobContent);
-      if (message.startsWith('http')) {
-        setJobContent(response);
-      }
 
       const assistantMessage: Message = {
         role: 'assistant',
         message: response,
-        job_content: jobContent,
-        cv_content: cvContent
       };
 
-      await chatService.saveMessage(assistantMessage);
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Error:', error);
@@ -63,44 +55,20 @@ export const useChat = () => {
     }
   };
 
-  const handleFileContent = async (content: string) => {
-    try {
-      setIsLoading(true);
-      setCvContent(content);
-      
-      const userMessage: Message = {
-        role: 'user',
-        message: 'Resume uploaded',
-        cv_content: content
-      };
-      
-      await chatService.saveMessage(userMessage);
-      
-      const response = await chatService.processResume(content);
-      
-      const assistantMessage: Message = {
-        role: 'assistant',
-        message: response,
-        cv_content: content
-      };
+  const handleFileContent = (content: string) => {
+    setCvContent(content);
+    toast({
+      title: "Success",
+      description: "Resume uploaded successfully",
+    });
+  };
 
-      await chatService.saveMessage(assistantMessage);
-
-      setMessages(prev => [
-        ...prev,
-        userMessage,
-        assistantMessage
-      ]);
-    } catch (error) {
-      console.error('Error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to process resume",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
+  const handleUrlContent = (content: string) => {
+    setJobContent(content);
+    toast({
+      title: "Success",
+      description: "Job description loaded successfully",
+    });
   };
 
   return {
@@ -108,6 +76,7 @@ export const useChat = () => {
     isLoading,
     handleSendMessage,
     handleFileContent,
+    handleUrlContent,
     messagesEndRef
   };
 };
