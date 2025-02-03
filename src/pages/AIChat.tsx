@@ -27,30 +27,16 @@ export default function AIChat() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      
-      if (error || !user) {
-        toast({
-          title: "Authentication required",
-          description: "Please login to use the chat feature",
-          variant: "destructive",
-        });
-        navigate('/');
-        return;
-      }
-
-      // Fetch context only if user is authenticated
-      const { data, error: contextError } = await supabase
+    const fetchContext = async () => {
+      const { data, error } = await supabase
         .from('chat_messages')
         .select('cv_content, job_content')
-        .eq('user_id', user.id)
         .eq('role', 'system')
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
 
-      if (contextError || !data) {
+      if (error || !data) {
         toast({
           title: "Context not found",
           description: "Please upload your CV and job description first",
@@ -66,7 +52,7 @@ export default function AIChat() {
       });
     };
 
-    checkAuth();
+    fetchContext();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -110,22 +96,16 @@ Provide a clear and concise response based on both the resume and job descriptio
         content: response.generated_text.trim(),
       };
       
-      // Store the conversation in Supabase
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase.from('chat_messages').insert([
-          {
-            user_id: user.id,
-            message: input,
-            role: "user"
-          },
-          {
-            user_id: user.id,
-            message: assistantMessage.content,
-            role: "assistant"
-          }
-        ]);
-      }
+      await supabase.from('chat_messages').insert([
+        {
+          message: input,
+          role: "user"
+        },
+        {
+          message: assistantMessage.content,
+          role: "assistant"
+        }
+      ]);
 
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {

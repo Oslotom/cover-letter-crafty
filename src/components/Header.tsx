@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Home, MessageSquare, LogIn } from "lucide-react";
+import { Home, MessageSquare } from "lucide-react";
 import { DarkModeToggle } from "./DarkModeToggle";
 
 export const Header = () => {
@@ -22,10 +22,6 @@ export const Header = () => {
           </Link>
         </nav>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" className="gap-2">
-            <LogIn className="w-4 h-4" />
-            Login
-          </Button>
           <DarkModeToggle />
         </div>
       </div>
