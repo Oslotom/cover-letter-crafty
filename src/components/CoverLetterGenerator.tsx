@@ -4,8 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, MessageSquare, Download } from "lucide-react";
-import { useNavigate } from 'react-router-dom';
+import { Loader2 } from "lucide-react";
 
 interface CoverLetterGeneratorProps {
   cvContent: string;
@@ -16,9 +15,9 @@ export const CoverLetterGenerator = ({ cvContent, jobContent }: CoverLetterGener
   const [coverLetter, setCoverLetter] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const truncateText = (text: string) => {
+    // Roughly estimate 4 characters per token
     const maxChars = 4000; // This gives us roughly 1000 tokens per text
     return text.length > maxChars ? text.slice(0, maxChars) + '...' : text;
   };
@@ -84,6 +83,9 @@ ${truncatedJob}
   };
 
   const extractCoverLetter = (text: string) => {
+    // More robust extraction using regex (still needs refinement based on LLM output patterns)
+
+    // Example Regex (ADAPT THIS TO YOUR LLM OUTPUT):
     const regex = /(Dear\s[a-zA-Z\s.]*,\n[\s\S]*?(Sincerely|Best regards|Regards|Yours sincerely|Respectfully),\n[a-zA-Z\s]*)/i; // Improved regex, added more closings
     const match = text.match(regex);
 
@@ -91,6 +93,7 @@ ${truncatedJob}
       return match[0].trim();
     }
 
+    // Fallback: If no clear match, try to find "Dear" and common closings (less reliable)
     const startMarker = text.indexOf("Dear");
     const endMarker = text.lastIndexOf("Sincerely,") || text.lastIndexOf("Best regards,") || text.lastIndexOf("Regards,") || text.lastIndexOf("Yours sincerely,") || text.lastIndexOf("Respectfully,");
 
@@ -103,31 +106,13 @@ ${truncatedJob}
     return text.trim(); // Ultimate fallback: return the whole thing
   };
 
-  const handleChatClick = () => {
-    navigate('/chat', { 
-      state: { 
-        cvContent, 
-        jobContent 
-      } 
-    });
-  };
-
-  const downloadCoverLetter = () => {
-    const element = document.createElement('a');
-    const file = new Blob([coverLetter], {type: 'text/plain'});
-    element.href = URL.createObjectURL(file);
-    element.download = 'cover-letter.txt';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-  };
 
   return (
     <div className="space-y-4">
       <Button
         onClick={generateCoverLetter}
         disabled={isGenerating || !cvContent || !jobContent}
-        className="w-full min-h-[60px]"
+        className="w-full min-h-[60px] "
       >
         {isGenerating ? (
           <>
@@ -140,31 +125,13 @@ ${truncatedJob}
       </Button>
 
       {coverLetter && (
-        <div className="space-y-4">
-          <div className="flex gap-2 justify-end">
-            <Button
-              onClick={handleChatClick}
-              className="flex items-center gap-2"
-            >
-              <MessageSquare className="w-4 h-4" />
-              Chat with AI
-            </Button>
-            <Button
-              onClick={downloadCoverLetter}
-              className="flex items-center gap-2"
-            >
-              <Download className="w-4 h-4" />
-              Download
-            </Button>
-          </div>
-          <Card className="p-4">
-            <Textarea
-              value={coverLetter}
-              onChange={(e) => setCoverLetter(e.target.value)}
-              className="min-h-[650px] font-serif"
-            />
-          </Card>
-        </div>
+        <Card className="p-4">
+          <Textarea
+            value={coverLetter}
+            onChange={(e) => setCoverLetter(e.target.value)}
+            className="min-h-[650px] font-serif"
+          />
+        </Card>
       )}
     </div>
   );

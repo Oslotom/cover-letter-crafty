@@ -3,9 +3,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import * as pdfjs from 'pdfjs-dist';
-
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 interface FileUploadProps {
   onFileContent: (content: string) => void;
@@ -16,28 +13,11 @@ export const FileUpload = ({ onFileContent }: FileUploadProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const extractTextFromPDF = async (file: File): Promise<string> => {
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
-    let fullText = '';
-    
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const textContent = await page.getTextContent();
-      const pageText = textContent.items
-        .map((item: any) => item.str)
-        .join(' ');
-      fullText += pageText + '\n';
-    }
-    
-    return fullText;
-  };
-
   const handleFile = async (file: File) => {
-    if (!file.type.match('text/plain') && !file.type.match('application/pdf')) {
+    if (file.type !== 'text/plain') {
       toast({
         title: "Invalid file type",
-        description: "Please upload a text or PDF file",
+        description: "Please upload a text file",
         variant: "destructive",
       });
       return;
@@ -45,22 +25,17 @@ export const FileUpload = ({ onFileContent }: FileUploadProps) => {
 
     setIsLoading(true);
     try {
-      let text;
-      if (file.type === 'application/pdf') {
-        text = await extractTextFromPDF(file);
-      } else {
-        text = await file.text();
-      }
+      const text = await file.text();
       onFileContent(text.trim());
       toast({
         title: "Success",
-        description: "Resume uploaded successfully",
+        description: "CV uploaded successfully",
       });
     } catch (error) {
-      console.error('Error processing file:', error);
+      console.error('Error processing text file:', error);
       toast({
         title: "Error",
-        description: "Failed to process file",
+        description: "Failed to process text file",
         variant: "destructive",
       });
     } finally {
@@ -97,7 +72,7 @@ export const FileUpload = ({ onFileContent }: FileUploadProps) => {
     >
       <input
         type="file"
-        accept=".txt,.pdf"
+        accept=".txt"
         className="hidden"
         id="file-upload"
         onChange={(e) => {
@@ -114,7 +89,7 @@ export const FileUpload = ({ onFileContent }: FileUploadProps) => {
         ) : (
           <div className="text-center">
             <p className="text-sm text-muted-foreground mb-2">
-              Drag and drop your resume (PDF or TXT) here or click to browse
+              Drag and drop your CV text file here or click to browse
             </p>
             <Button variant="outline" size="sm">
               Choose File
