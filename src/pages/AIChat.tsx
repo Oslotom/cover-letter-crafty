@@ -35,9 +35,15 @@ export default function AIChat() {
         .eq('role', 'system')
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
-      if (error || !data) {
+      if (error) {
+        console.error('Error fetching context:', error);
+        setHasContext(false);
+        return;
+      }
+
+      if (!data) {
         setHasContext(false);
         return;
       }
