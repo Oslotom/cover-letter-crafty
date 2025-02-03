@@ -12,8 +12,6 @@ interface UrlInputProps {
 export function UrlInput({ onUrlContent }: UrlInputProps) {
   const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [jobContent, setJobContent] = useState("");
-  const [cvContent, setCvContent] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -38,12 +36,12 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
     setIsLoading(true);
     try {
       const content = await fetchJobDescription(url);
-      setJobContent(content);
       onUrlContent(content);
       toast({
         title: "Success",
         description: "Job description fetched successfully",
       });
+      navigate('/chat');
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -53,41 +51,6 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
       });
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const navigateToChat = async () => {
-    try {
-      // Store new context in chat_messages without user_id
-      const { error } = await supabase
-        .from('chat_messages')
-        .insert([
-          {
-            cv_content: cvContent,
-            job_content: jobContent,
-            message: "Context initialized",
-            role: "system"
-          }
-        ]);
-
-      if (error) {
-        console.error('Error storing context:', error);
-        toast({
-          title: "Error",
-          description: "Failed to store context",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      navigate('/ai-chat');
-    } catch (error) {
-      console.error('Error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to navigate to chat",
-        variant: "destructive",
-      });
     }
   };
 
