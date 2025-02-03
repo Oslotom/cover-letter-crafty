@@ -4,19 +4,19 @@ import { Send, FileText, Link as LinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
-interface Message {
-  role: "user" | "assistant" | "system";
+type Message = {
+  role: "user" | "assistant";
   content: string;
-}
+};
 
-interface Context {
+type Context = {
   cv: string | null;
   job: string | null;
-}
+};
 
 export default function AIChat() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -56,53 +56,45 @@ export default function AIChat() {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    const userMessage: Message = { role: "user", content: input };
+    const userMessage: Message = {
+      role: "user",
+      content: input,
+    };
+
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
 
     try {
-      const hf = new HfInference("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");
+      const hf = new HfInference(import.meta.env.VITE_HUGGINGFACE_API_KEY);
       
-      const prompt = `Given the following context:
+      const systemPrompt = `You are a helpful AI assistant. Use the following context about the user's CV and job description to provide relevant advice:
+      CV: ${context.cv}
+      Job Description: ${context.job}`;
 
-Resume:
-${context.cv}
-
-Job Description:
-${context.job}
-
-Please help answer this question about the job application:
-${input}
-
-Provide a clear and concise response based on both the resume and job description context.`;
+      const conversation = [
+        { role: "system", content: systemPrompt },
+        ...messages,
+        userMessage,
+      ]
+        .map((msg) => `${msg.role}: ${msg.content}`)
+        .join("\n");
 
       const response = await hf.textGeneration({
-        model: "mistralai/Mistral-7B-Instruct-v0.3",
-        inputs: prompt,
+        model: "OpenAssistant/oasst-sft-6-llama-30b-xor",
+        inputs: conversation,
         parameters: {
-          max_new_tokens: 250,
+          max_new_tokens: 200,
           temperature: 0.7,
-          top_p: 0.9,
-          repetition_penalty: 1.1,
+          top_p: 0.95,
+          repetition_penalty: 1.15,
         },
       });
 
       const assistantMessage: Message = {
         role: "assistant",
-        content: response.generated_text.trim(),
+        content: response.generated_text,
       };
-      
-      await supabase.from('chat_messages').insert([
-        {
-          message: input,
-          role: "user"
-        },
-        {
-          message: assistantMessage.content,
-          role: "assistant"
-        }
-      ]);
 
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
@@ -152,61 +144,37 @@ Provide a clear and concise response based on both the resume and job descriptio
     <div className="min-h-screen bg-gradient-to-b from-[#1a242f] to-[#222f3a] dark:from-white dark:to-gray-100">
       <Header />
       <main className="container max-w-4xl mx-auto p-4 pt-24">
-        <div className="space-y-4 mb-4 h-[calc(100vh-16rem)] overflow-y-auto">
-          {messages.map((message, index) => (
-            <div
-              key={index}
-              className={cn(
-                "flex gap-3 p-4 rounded-lg max-w-3xl mx-auto",
-                message.role === "assistant"
-                  ? "bg-gray-800/50 dark:bg-white/50"
-                  : "bg-blue-600/50 dark:bg-blue-100/50"
-              )}
-            >
-              <div className="flex-1 space-y-2">
-                <div className="font-medium text-white dark:text-gray-800">
-                  {message.role === "assistant" ? "AI Assistant" : "You"}
-                </div>
-                <div className="text-sm text-gray-100 dark:text-gray-700">
-                  {message.content}
-                </div>
+        <div className="space-y-4">
+          <div className="space-y-4">
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={cn(
+                  "p-4 rounded-lg",
+                  message.role === "user"
+                    ? "bg-primary text-primary-foreground ml-auto max-w-[80%]"
+                    : "bg-muted max-w-[80%]"
+                )}
+              >
+                {message.content}
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
 
-          {isLoading && (
-            <div className="flex gap-3 p-4 rounded-lg bg-gray-800/50 dark:bg-white/50 max-w-3xl mx-auto">
-              <div className="flex-1 space-y-2">
-                <div className="font-medium text-white dark:text-gray-800">AI Assistant</div>
-                <div className="flex space-x-2">
-                  <div className="w-2 h-2 bg-white dark:bg-gray-800 rounded-full animate-bounce" />
-                  <div className="w-2 h-2 bg-white dark:bg-gray-800 rounded-full animate-bounce [animation-delay:0.2s]" />
-                  <div className="w-2 h-2 bg-white dark:bg-gray-800 rounded-full animate-bounce [animation-delay:0.4s]" />
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <form onSubmit={handleSubmit} className="sticky bottom-4 max-w-3xl mx-auto">
-          <div className="flex gap-2 items-center bg-gray-800/50 dark:bg-white/50 backdrop-blur-sm border border-gray-700/50 dark:border-gray-300/50 rounded-lg p-2">
+          <form onSubmit={handleSubmit} className="flex gap-2">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type your message..."
-              className="flex-1 bg-transparent border-0 focus:outline-none focus:ring-0 text-white dark:text-gray-800 placeholder:text-gray-400 dark:placeholder:text-gray-500"
-            />
-            <Button 
-              type="submit" 
-              size="icon"
+              className="flex-1 p-2 rounded-lg bg-muted"
               disabled={isLoading}
-              className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-100 dark:hover:bg-blue-200"
-            >
+            />
+            <Button type="submit" disabled={isLoading}>
               <Send className="w-4 h-4" />
             </Button>
-          </div>
-        </form>
+          </form>
+        </div>
       </main>
     </div>
   );
