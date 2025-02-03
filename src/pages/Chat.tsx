@@ -83,33 +83,43 @@ const Chat = () => {
       let prompt = '';
       
       if (message.startsWith('http') && cvContent && newJobContent) {
-        prompt = `Based on the following resume and job description, provide a brief and valuable insight (max 150 words) about the match between the candidate's profile and the job requirements. Start with "Thanks for sharing your resume and the job description. Here are some valuable insights:"
+        prompt = `You are a career advisor. Based on the resume and job description below, provide a very brief insight (max 50 words) about the match. Start with "Thanks for sharing! Here's a quick insight:" and focus only on the most important match or mismatch.
 
 Resume: ${truncateText(cvContent)}
 
 Job Description: ${truncateText(newJobContent)}`;
       } else {
-        prompt = `You are a helpful AI assistant specializing in career advice. ${message}`;
+        prompt = `You are a helpful career advisor. Provide a brief response (max 50 words) to: ${message}`;
       }
 
       const aiResponse = await hf.textGeneration({
         model: 'mistralai/Mistral-7B-Instruct-v0.3',
         inputs: truncateText(prompt),
         parameters: {
-          max_new_tokens: 400,
+          max_new_tokens: 100,
           temperature: 0.7,
           top_p: 0.95,
           do_sample: true
         }
       });
 
-      const aiMessage = aiResponse.generated_text;
+      let cleanedResponse = aiResponse.generated_text
+        .replace(/Resume:[\s\S]*?Job Description:/g, '')
+        .replace(/Job Description:[\s\S]*/g, '')
+        .trim();
+
+      // Further clean up any remaining technical text
+      cleanedResponse = cleanedResponse
+        .replace(/\[.*?\]/g, '')
+        .replace(/```.*?```/g, '')
+        .replace(/\{.*?\}/g, '')
+        .trim();
 
       const { error: assistantError } = await supabase
         .from('chat_messages')
         .insert([{
           role: 'assistant',
-          message: aiMessage,
+          message: cleanedResponse,
           job_content: newJobContent,
           cv_content: cvContent,
           user_id: (await supabase.auth.getUser()).data.user?.id
@@ -117,7 +127,7 @@ Job Description: ${truncateText(newJobContent)}`;
 
       if (assistantError) throw assistantError;
 
-      setMessages(prev => [...prev, { role: 'assistant', message: aiMessage }]);
+      setMessages(prev => [...prev, { role: 'assistant', message: cleanedResponse }]);
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -141,33 +151,38 @@ Job Description: ${truncateText(newJobContent)}`;
         .from('chat_messages')
         .insert([{
           role: 'user',
-          message: 'Analyzing uploaded resume...',
+          message: 'Resume uploaded',
           cv_content: content,
           user_id: user?.id
         }]);
 
       if (chatError) throw chatError;
 
-      const prompt = `You are a helpful AI assistant specializing in career advice. Please analyze this resume and provide insights about the candidate's profile: ${truncateText(content)}`;
+      const prompt = `You are a career advisor. Provide a very brief analysis (max 50 words) of this resume, focusing on the key strengths: ${truncateText(content)}`;
       
       const aiResponse = await hf.textGeneration({
         model: 'mistralai/Mistral-7B-Instruct-v0.3',
         inputs: prompt,
         parameters: {
-          max_new_tokens: 400,
+          max_new_tokens: 100,
           temperature: 0.7,
           top_p: 0.95,
           do_sample: true
         }
       });
 
-      const aiMessage = aiResponse.generated_text;
+      let cleanedResponse = aiResponse.generated_text
+        .replace(/Resume:[\s\S]*/g, '')
+        .replace(/\[.*?\]/g, '')
+        .replace(/```.*?```/g, '')
+        .replace(/\{.*?\}/g, '')
+        .trim();
 
       const { error: assistantError } = await supabase
         .from('chat_messages')
         .insert([{
           role: 'assistant',
-          message: aiMessage,
+          message: cleanedResponse,
           cv_content: content,
           user_id: user?.id
         }]);
@@ -176,8 +191,8 @@ Job Description: ${truncateText(newJobContent)}`;
 
       setMessages(prev => [
         ...prev,
-        { role: 'user', message: 'Analyzing uploaded resume...', cv_content: content },
-        { role: 'assistant', message: aiMessage }
+        { role: 'user', message: 'Resume uploaded' },
+        { role: 'assistant', message: cleanedResponse }
       ]);
     } catch (error) {
       console.error('Error:', error);
