@@ -25,7 +25,6 @@ const Chat = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Initialize with welcome message
     setMessages([
       {
         role: 'assistant',
@@ -81,18 +80,17 @@ const Chat = () => {
 
       if (chatError) throw chatError;
 
-      // Construct context-aware prompt
-      let prompt = `You are a helpful AI assistant specializing in career advice and job applications. `;
+      let prompt = '';
       
-      if (cvContent) {
-        prompt += `\nContext - Resume: ${truncateText(cvContent)}`;
+      if (message.startsWith('http') && cvContent && newJobContent) {
+        prompt = `Based on the following resume and job description, provide a brief and valuable insight (max 150 words) about the match between the candidate's profile and the job requirements. Start with "Thanks for sharing your resume and the job description. Here are some valuable insights:"
+
+Resume: ${truncateText(cvContent)}
+
+Job Description: ${truncateText(newJobContent)}`;
+      } else {
+        prompt = `You are a helpful AI assistant specializing in career advice. ${message}`;
       }
-      
-      if (newJobContent) {
-        prompt += `\nContext - Job Description: ${truncateText(newJobContent)}`;
-      }
-      
-      prompt += `\nUser Message: ${message}\n\nPlease provide a helpful response based on the available context. Focus on career advice and job-specific insights if context is available.`;
 
       const aiResponse = await hf.textGeneration({
         model: 'mistralai/Mistral-7B-Instruct-v0.3',
