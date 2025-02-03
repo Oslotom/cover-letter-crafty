@@ -5,8 +5,10 @@ import { useToast } from './ui/use-toast';
 import * as pdfjs from 'pdfjs-dist';
 
 // Configure PDF.js worker
-const pdfjsVersion = pdfjs.version;
-pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.js`;
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.js',
+  import.meta.url
+).toString();
 
 interface FileUploadProps {
   onFileContent: (content: string) => void;
