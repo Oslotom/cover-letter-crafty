@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { HfInference } from "@huggingface/inference";
-import { Send } from "lucide-react";
+import { Send, FileText, Link as LinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { cn } from "@/lib/utils";
@@ -23,6 +23,7 @@ export default function AIChat() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [context, setContext] = useState<Context>({ cv: null, job: null });
+  const [hasContext, setHasContext] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -37,12 +38,7 @@ export default function AIChat() {
         .single();
 
       if (error || !data) {
-        toast({
-          title: "Context not found",
-          description: "Please upload your CV and job description first",
-          variant: "destructive",
-        });
-        navigate('/');
+        setHasContext(false);
         return;
       }
 
@@ -50,6 +46,7 @@ export default function AIChat() {
         cv: data.cv_content,
         job: data.job_content
       });
+      setHasContext(true);
     };
 
     fetchContext();
@@ -109,7 +106,7 @@ Provide a clear and concise response based on both the resume and job descriptio
 
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
-      console.error("Error:", error);
+      console.error('Error:', error);
       toast({
         title: "Error",
         description: "Failed to get AI response",
@@ -119,6 +116,37 @@ Provide a clear and concise response based on both the resume and job descriptio
       setIsLoading(false);
     }
   };
+
+  if (!hasContext) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#1a242f] to-[#222f3a] dark:from-white dark:to-gray-100">
+        <Header />
+        <main className="container max-w-4xl mx-auto p-4 pt-24">
+          <div className="text-center space-y-6">
+            <h2 className="text-2xl font-bold text-white dark:text-gray-800">
+              Please provide your CV and job description first
+            </h2>
+            <div className="flex justify-center gap-4">
+              <Button
+                onClick={() => navigate('/')}
+                className="gap-2"
+              >
+                <FileText className="w-4 h-4" />
+                Upload CV
+              </Button>
+              <Button
+                onClick={() => navigate('/')}
+                className="gap-2"
+              >
+                <LinkIcon className="w-4 h-4" />
+                Add Job URL
+              </Button>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1a242f] to-[#222f3a] dark:from-white dark:to-gray-100">

@@ -114,30 +114,11 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
 
   const navigateToChat = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast({
-          title: "Authentication required",
-          description: "Please login to use the chat feature",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Delete any existing context for this user
-      await supabase
-        .from('chat_messages')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('role', 'system');
-
-      // Store new context in chat_messages
+      // Store new context in chat_messages without user_id
       const { error } = await supabase
         .from('chat_messages')
         .insert([
           {
-            user_id: user.id,
             cv_content: cvContent,
             job_content: jobContent,
             message: "Context initialized",
