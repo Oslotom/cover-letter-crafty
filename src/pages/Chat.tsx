@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { FileUpload } from '@/components/FileUpload';
 import { ChatInput } from '@/components/chat/ChatInput';
-import { ChatMessage } from '@/components/chat/ChatMessage';
 import { MessageList } from '@/components/chat/MessageList';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
