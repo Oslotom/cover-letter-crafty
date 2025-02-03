@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { HfInference } from '@huggingface/inference';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,10 +15,17 @@ export const CoverLetterGenerator = ({ cvContent, jobContent }: CoverLetterGener
   const [coverLetter, setCoverLetter] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
+  const [promptTemplate, setPromptTemplate] = useState('');
+
+  useEffect(() => {
+    const savedPrompt = localStorage.getItem('coverLetterPrompt');
+    if (savedPrompt) {
+      setPromptTemplate(savedPrompt);
+    }
+  }, []);
 
   const truncateText = (text: string) => {
-    // Roughly estimate 4 characters per token
-    const maxChars = 4000; // This gives us roughly 1000 tokens per text
+    const maxChars = 4000;
     return text.length > maxChars ? text.slice(0, maxChars) + '...' : text;
   };
 
@@ -36,23 +43,24 @@ export const CoverLetterGenerator = ({ cvContent, jobContent }: CoverLetterGener
     try {
       const hf = new HfInference("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");
       
-      // Truncate inputs to manage token count
       const truncatedCV = truncateText(cvContent);
       const truncatedJob = truncateText(jobContent);
       
-      const prompt = `Create a concise and professional cover letter (max 250 words) based on the following CV and job description. Output ONLY the cover letter text.
+      const finalPrompt = (promptTemplate || `Create a concise and professional cover letter (max 250 words) based on the following CV and job description. Output ONLY the cover letter text.
 
 CV Summary:
-${truncatedCV}
+{cv}
 
 Job Summary:
-${truncatedJob}
+{job}
 
-. `;
+.`)
+        .replace('{cv}', truncatedCV)
+        .replace('{job}', truncatedJob);
 
       const response = await hf.textGeneration({
         model: 'mistralai/Mistral-7B-Instruct-v0.2',
-        inputs: prompt,
+        inputs: finalPrompt,
         parameters: {
           max_new_tokens: 400,
           temperature: 0.7,
