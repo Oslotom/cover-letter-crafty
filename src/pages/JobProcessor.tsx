@@ -36,9 +36,9 @@ const JobProcessor = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            inputs: `Extract ONLY the job title from this job posting. Return ONLY the exact job title, nothing else: ${jobContent.substring(0, 500)}`,
+            inputs: `Extract ONLY the job title from this job posting. Return ONLY the job title, no additional text or formatting: ${jobContent.substring(0, 500)}`,
             parameters: {
-              max_new_tokens: 20,
+              max_new_tokens: 15,
               temperature: 0.1,
               top_p: 0.1,
               return_full_text: false
@@ -52,8 +52,9 @@ const JobProcessor = () => {
         // Clean up the response
         extractedTitle = extractedTitle
           .split('\n')[0] // Take only the first line
-          .replace(/^(job title:|title:|position:|role:)/i, '') // Remove common prefixes
+          .replace(/^(job title:|title:|position:|role:|here's|this is|the|a)/i, '') // Remove common prefixes
           .replace(/["']/g, '') // Remove quotes
+          .replace(/[:.,!?]/g, '') // Remove punctuation
           .trim();
 
         setJobTitle(extractedTitle);
