@@ -36,9 +36,11 @@ const JobProcessor = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            inputs: `Extract the job title from this job posting. Output ONLY the exact job title with no additional text: ${jobContent.substring(0, 500)}`,
+            inputs: `Extract ONLY the exact job title or role name from this job posting. Look for it in the header or at the beginning of the text. Return ONLY the job title, nothing else:
+
+${jobContent.substring(0, 1000)}`,
             parameters: {
-              max_new_tokens: 10,
+              max_new_tokens: 15,
               temperature: 0.1,
               top_p: 0.1,
               return_full_text: false
@@ -51,14 +53,13 @@ const JobProcessor = () => {
         
         // Clean up the response
         extractedTitle = extractedTitle
-          .split('\n')[0] // Take only the first line
-          .replace(/^(job title:|title:|position:|role:|here's|this is|the|a|for|senior|junior)/i, '') // Remove common prefixes
-          .replace(/["']/g, '') // Remove quotes
-          .replace(/[:.,!?]/g, '') // Remove punctuation
-          .replace(/^\W+|\W+$/g, '') // Remove leading/trailing non-word characters
+          .replace(/^(job title:|title:|position:|role:|here's|this is|the|a|an|for)/i, '')
+          .replace(/["']/g, '')
+          .replace(/[:.,!?]/g, '')
+          .replace(/^\W+|\W+$/g, '')
           .trim();
 
-        setJobTitle(extractedTitle);
+        setJobTitle(extractedTitle || 'Job Position');
       } catch (error) {
         console.error('Error extracting job title:', error);
         setJobTitle('Job Position');

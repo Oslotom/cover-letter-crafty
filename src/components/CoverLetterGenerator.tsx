@@ -30,13 +30,15 @@ export const CoverLetterGenerator = ({ cvContent, jobContent }: CoverLetterGener
     try {
       const hf = new HfInference("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");
       
-      const finalPrompt = `Write a professional cover letter based on the CV and job description below. Output ONLY the cover letter text with no salutations, signatures, or additional formatting. Keep it under 250 words.
+      const finalPrompt = `Generate a professional cover letter based on the CV and job description below. The cover letter should highlight relevant experience and skills from the CV that match the job requirements. Keep it concise and professional, under 300 words.
 
 Resume Content:
 ${cvContent}
 
 Job Description:
-${jobContent}`;
+${jobContent}
+
+Generate ONLY the cover letter body text, without any salutations, signatures, or formatting. Focus on making compelling connections between the candidate's experience and the job requirements.`;
 
       const response = await hf.textGeneration({
         model: 'mistralai/Mistral-7B-Instruct-v0.2',
@@ -45,22 +47,19 @@ ${jobContent}`;
           max_new_tokens: 500,
           temperature: 0.7,
           top_p: 0.9,
-          repetition_penalty: 1.1,
+          repetition_penalty: 1.2,
           return_full_text: false
         },
       });
 
       let generatedText = response.generated_text.trim();
       
-      // Clean up the response
+      // Clean up the response but preserve the actual cover letter content
       generatedText = generatedText
-        .replace(/^(cover letter:|dear.*?:|to whom.*?:|hiring.*?:|re:)/i, '')
-        .replace(/sincerely,?.*$/i, '')
-        .replace(/best regards.*$/i, '')
-        .replace(/yours.*$/i, '')
-        .replace(/^[^a-z\d]*|[^a-z\d]*$/gi, '')
-        .replace(/resume content:.*?job description:/is, '')
-        .replace(/job description:.*$/is, '')
+        .replace(/^(Dear|To Whom|Hiring|RE:|Resume Content:|Job Description:).*/im, '')
+        .replace(/Sincerely,?.*$/im, '')
+        .replace(/Best regards,?.*$/im, '')
+        .replace(/Yours.*$/im, '')
         .trim();
 
       setCoverLetter(generatedText);
