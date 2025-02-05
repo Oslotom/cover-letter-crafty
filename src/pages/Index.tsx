@@ -27,21 +27,22 @@ const Index = () => {
   
   return (
     <div className="min-h-screen py-8 bg-gradient-to-b from-[#1a242f] to-[#222f3a]">
-      <div className="container max-w-4xl mx-auto space-y-12 pt-16 p-6">
-        <div className="text-center space-y-6">
-          <h1 className="text-6xl font-bold">
-            <span className="span-gradient-text">Create Free Cover Letter with AI</span>
+      <div className="container max-w-2xl mx-auto space-y-2 pt-16 p-6">
+        <div className="text-center space-y-4">
+          <h1 className="text-6xl">
+            <span className="span-gradient-text">Create free cover letter with AI </span>
           </h1>       
-          <p className="text-muted-foreground max-w-lg mx-auto text-white">
-            Upload your resume and provide a job posting URL to generate a tailored cover letter
+          
+          <p className="text-muted-foreground text-white p-6">
+            Just add the job description link and upload your resume. No fuss, totally free. No login. 
           </p>
         </div>
         
-        <div className="space-y-12 max-w-3xl mx-auto">
+        <div className=" max-w-4xl mx-auto">
           <UrlInput onUrlContent={setJobContent} />
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-6 p-2">
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
@@ -51,12 +52,12 @@ const Index = () => {
                   index % 2 === 1 ? 'flex-row-reverse' : ''
                 }`}
               >
-                <div className="flex-1 flex justify-center">
-                  <div className="w-16 h-16 flex items-center justify-center bg-white/10 rounded-2xl">
+                <div className="w-[70%] justify-center">
+                  <div className=" w-16 h-16 p-4 flex items-center justify-center bg-white/10 rounded-2xl">
                     <Icon className="w-8 h-8 text-white" />
                   </div>
                 </div>
-                <div className="flex-1 space-y-4">
+                <div className=" space-y-2">
                   <h3 className="text-2xl font-semibold text-white">{feature.title}</h3>
                   <p className="text-gray-300 text-lg leading-relaxed">{feature.description}</p>
                 </div>
