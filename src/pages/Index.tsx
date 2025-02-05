@@ -43,16 +43,21 @@ const Index = () => {
           <UrlInput onUrlContent={setJobContent} />
         </div>
 
-        {/* Features Section */}
-        <div className="grid gap-8 md:grid-cols-3 mt-16">
+        {/* Features Section - Now one per row */}
+        <div className="space-y-6">
           {features.map((feature, index) => (
-            <Card key={index} className="p-6 bg-white/10 border-white/20 backdrop-blur-sm hover:bg-white/20 transition-all duration-300">
-              <div className="space-y-4">
+            <Card 
+              key={index} 
+              className="p-6 border-white/20 backdrop-blur-sm hover:bg-white/5 transition-all duration-300"
+            >
+              <div className="flex items-start space-x-4">
                 <div className="rounded-full w-12 h-12 flex items-center justify-center bg-white/10">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-semibold text-white">{feature.title}</h3>
-                <p className="text-gray-300 text-sm">{feature.description}</p>
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold text-white mb-2">{feature.title}</h3>
+                  <p className="text-gray-300">{feature.description}</p>
+                </div>
               </div>
             </Card>
           ))}
