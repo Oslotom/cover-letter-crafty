@@ -36,11 +36,14 @@ const JobProcessor = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            inputs: `Extract ONLY the exact job title or role name from this job posting. Look for it in the header or at the beginning of the text. Return ONLY the job title, nothing else:
+            inputs: `Extract ONLY the job title or role name from this job posting. Look specifically in the header or at the very beginning of the text for the main job title. Return ONLY the exact job title or role name, nothing else. Example job titles: "Senior Software Engineer", "Product Manager", "Marketing Director".
 
-${jobContent.substring(0, 1000)}`,
+Text:
+${jobContent.substring(0, 1000)}
+
+Return ONLY the job title, no other text:`,
             parameters: {
-              max_new_tokens: 15,
+              max_new_tokens: 20,
               temperature: 0.1,
               top_p: 0.1,
               return_full_text: false
