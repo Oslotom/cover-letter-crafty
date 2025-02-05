@@ -4,7 +4,8 @@ import { FileUpload } from '@/components/FileUpload';
 import { Button } from "@/components/ui/button";
 import { CoverLetterGenerator } from '@/components/CoverLetterGenerator';
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ExternalLink, Download, Edit2, Save, Link } from "lucide-react";
+import { Header } from '@/components/Header';
+import { ExternalLink, Link } from "lucide-react";
 
 interface LocationState {
   jobContent: string;
@@ -94,30 +95,32 @@ Return ONLY the job title, no other text:`,
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#1a242f] to-[#222f3a]">
-      <div className="container max-w-4xl mx-auto space-y-8 px-6 md:px-4 py-20">
+    <div className="min-h-screen bg-background">
+      <Header />
+      
+      <div className="container max-w-4xl mx-auto space-y-8 px-6 md:px-4 py-20 pt-28">
         <div className="text-center space-y-6">
-          <p className="text-lg text-white">Create Cover Letter</p>
+          <p className="text-lg text-foreground/80">Create Cover Letter</p>
           <button 
             onClick={navigateToJobDetails}
-            className="group text-4xl mx-auto text-white hover:text-blue-400 transition-colors flex items-center justify-center gap-2"
+            className="group text-4xl mx-auto text-foreground hover:text-primary transition-colors flex items-center justify-center gap-2"
           >       
             {jobTitle}
             <ExternalLink className="w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
           
           {sourceUrl && (
-            <div className="flex items-center justify-center gap-2 text-white/60">
+            <div className="flex items-center justify-center gap-2 text-foreground/60">
               <Link className="w-4 h-4" />
               <a href={sourceUrl} target="_blank" rel="noopener noreferrer" 
-                className="hover:text-white transition-colors">
+                className="hover:text-foreground transition-colors">
                 {sourceUrl}
               </a>
             </div>
           )}
         </div>
 
-        <div className="space-y-8 bg-white/10 rounded-lg p-6">
+        <div className="space-y-8 bg-card rounded-lg p-6 shadow-sm">
           <div className="space-y-4">
             <FileUpload 
               onFileContent={handleFileContent} 

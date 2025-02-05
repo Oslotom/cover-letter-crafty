@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import * as pdfjs from 'pdfjs-dist';
 import { Button } from "@/components/ui/button";
-import { Upload, Check } from "lucide-react";
+import { Upload, Check, Loader2 } from "lucide-react";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.js',
@@ -114,14 +114,23 @@ export const FileUpload = ({ onFileContent, contentType, showSuccessInButton }: 
         />
         <label
           htmlFor="file-upload"
-          className={`flex-1 flex items-center justify-center px-6 py-4 border-2 border-dashed 
-            border-white/20 rounded-lg cursor-pointer hover:border-white/40 transition-colors
-            ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className="flex-1 flex items-center justify-center px-6 py-12 border-2 border-dashed 
+            border-border rounded-lg cursor-pointer hover:border-foreground/40 transition-colors
+            bg-background/50 relative group"
         >
-          <div className="text-center text-white/60">
-            <Upload className="mx-auto h-6 w-6 mb-2" />
-            <p>Click to upload resume (PDF or TXT)</p>
-            <p className="text-sm">Max file size: 5MB</p>
+          <div className="text-center text-foreground/60 group-hover:text-foreground/80 transition-colors">
+            {isSuccess ? (
+              <>
+                <Check className="mx-auto h-6 w-6 mb-2 text-green-500" />
+                <p>Resume uploaded successfully</p>
+              </>
+            ) : (
+              <>
+                <Upload className="mx-auto h-6 w-6 mb-2" />
+                <p>Click to upload resume (PDF or TXT)</p>
+                <p className="text-sm">Max file size: 5MB</p>
+              </>
+            )}
           </div>
         </label>
       </div>
