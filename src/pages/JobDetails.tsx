@@ -62,21 +62,21 @@ const JobDetails = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#1a242f] to-[#222f3a]">
+    <div className="min-h-screen bg-background">
       <div className="container max-w-[1200px] mx-auto px-4 py-8">
         <div className="mb-6 flex items-center justify-between">
           <Link to="/job-processor">
-            <Button variant="outline" className="text-white">
+            <Button variant="outline">
               Back to Job Processor
             </Button>
           </Link>
         </div>
 
-        <Card className="p-6 mb-8 bg-white/10">
+        <Card className="p-6 mb-8">
           <div className="flex items-start justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">{jobTitle}</h1>
-              <div className="flex items-center text-gray-300">
+              <h1 className="text-3xl font-bold text-foreground mb-2">{jobTitle}</h1>
+              <div className="flex items-center text-muted-foreground">
                 <Info className="w-4 h-4 mr-2" />
                 <span>Detailed Job Information</span>
               </div>
@@ -85,21 +85,21 @@ const JobDetails = () => {
 
           <div className="space-y-6">
             <div>
-              <h2 className="text-xl font-semibold text-white mb-4">Key Details</h2>
+              <h2 className="text-xl font-semibold text-foreground mb-4">Key Details</h2>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-white">Category</TableHead>
-                    <TableHead className="text-white">Details</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Details</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {getKeyDetails().map((detail, index) => (
                     <TableRow key={index}>
-                      <TableCell className="text-gray-300 font-medium">
+                      <TableCell className="font-medium">
                         {detail.label}
                       </TableCell>
-                      <TableCell className="text-gray-300">
+                      <TableCell>
                         {detail.value}
                       </TableCell>
                     </TableRow>
@@ -109,10 +109,10 @@ const JobDetails = () => {
             </div>
 
             <div>
-              <h2 className="text-xl font-semibold text-white mb-4">Full Description</h2>
-              <Card className="p-4 bg-white/5">
-                <div className="prose prose-invert max-w-none">
-                  <div className="text-gray-300 whitespace-pre-wrap">
+              <h2 className="text-xl font-semibold text-foreground mb-4">Full Description</h2>
+              <Card className="p-4 bg-card/50">
+                <div className="prose prose-neutral dark:prose-invert max-w-none">
+                  <div className="text-foreground whitespace-pre-wrap">
                     {jobContent}
                   </div>
                 </div>

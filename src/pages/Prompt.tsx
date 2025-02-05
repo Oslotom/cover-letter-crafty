@@ -24,13 +24,13 @@ Job Summary:
   };
 
   return (
-    <div className="min-h-screen py-8 bg-gradient-to-b from-[#1a242f] to-[#222f3a]">
+    <div className="min-h-screen bg-background py-8">
       <div className="container max-w-2xl mx-auto space-y-16 pt-16 p-8">
         <div className="text-center space-y-6">
           <h1 className="text-6xl font-bold">
             <span className="span-gradient-text">Cover Letter Prompt</span>
           </h1>
-          <p className="container max-w-2xl mx-auto text-muted-foreground max-w-lg text-white">
+          <p className="container max-w-2xl mx-auto text-muted-foreground max-w-lg">
             Customize the prompt used to generate cover letters
           </p>
         </div>

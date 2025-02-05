@@ -100,7 +100,7 @@ Return ONLY the job title, no other text:`,
       
       <div className="container max-w-4xl mx-auto space-y-8 px-6 md:px-4 py-20 pt-28">
         <div className="text-center space-y-6">
-          <p className="text-lg text-foreground/80">Create Cover Letter</p>
+          <p className="text-lg text-muted-foreground">Create Cover Letter</p>
           <button 
             onClick={navigateToJobDetails}
             className="group text-4xl mx-auto text-foreground hover:text-primary transition-colors flex items-center justify-center gap-2"
@@ -110,7 +110,7 @@ Return ONLY the job title, no other text:`,
           </button>
           
           {sourceUrl && (
-            <div className="flex items-center justify-center gap-2 text-foreground/60">
+            <div className="flex items-center justify-center gap-2 text-muted-foreground">
               <Link className="w-4 h-4" />
               <a href={sourceUrl} target="_blank" rel="noopener noreferrer" 
                 className="hover:text-foreground transition-colors">
