@@ -6,6 +6,7 @@ import Contact from './pages/Contact';
 import Roadmap from './pages/Roadmap';
 import NotFound from './pages/NotFound';
 import JobProcessor from './pages/JobProcessor';
+import JobDetails from './pages/JobDetails';
 import { Toaster } from "@/components/ui/toaster";
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
         <Route path="/chat" element={<Chat />} />
         <Route path="/prompt" element={<Prompt />} />
         <Route path="/job-processor" element={<JobProcessor />} />
+        <Route path="/job-details" element={<JobDetails />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/roadmap" element={<Roadmap />} />
         <Route path="*" element={<NotFound />} />

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CoverLetterGenerator } from '@/components/CoverLetterGenerator';
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, ExternalLink } from "lucide-react";
 
 interface LocationState {
   jobContent: string;
@@ -112,11 +112,21 @@ Return ONLY the job title, no other text:`,
     }
   };
 
+  const navigateToJobDetails = () => {
+    navigate('/job-details', { state: { jobContent, jobTitle } });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1a242f] to-[#222f3a]">
       <div className="container max-w-[950px] mx-auto space-y-8 px-6 md:px-6 py-8">
         <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold text-white">{jobTitle}</h1>
+          <button 
+            onClick={navigateToJobDetails}
+            className="group text-4xl font-bold text-white hover:text-blue-400 transition-colors flex items-center justify-center gap-2"
+          >
+            {jobTitle}
+            <ExternalLink className="w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
           <p className="text-gray-300">Upload your resume or connect your LinkedIn profile</p>
         </div>
 
