@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { FileUpload } from '@/components/FileUpload';
 import { UrlInput } from '@/components/UrlInput';
-import { CoverLetterGenerator } from '@/components/CoverLetterGenerator';
-import { Card } from "@/components/ui/card";
+import { Briefcase, FileText, Sparkles } from "lucide-react";
 
 const Index = () => {
   const [cvContent, setCvContent] = useState('');
@@ -10,35 +9,17 @@ const Index = () => {
 
   const features = [
     {
-      icon: (
-        <img 
-          src="/placeholder.svg" 
-          alt="Job Analysis" 
-          className="w-12 h-12"
-        />
-      ),
+      icon: Briefcase,
       title: "Smart Job Analysis",
       description: "Automatically extracts and analyzes job descriptions from URLs to understand key requirements and responsibilities."
     },
     {
-      icon: (
-        <img 
-          src="/placeholder.svg" 
-          alt="LinkedIn Integration" 
-          className="w-12 h-12"
-        />
-      ),
+      icon: FileText,
       title: "LinkedIn Integration",
       description: "Connect your LinkedIn profile or upload your resume to generate personalized cover letters based on your experience."
     },
     {
-      icon: (
-        <img 
-          src="/placeholder.svg" 
-          alt="AI Writing" 
-          className="w-12 h-12"
-        />
-      ),
+      icon: Sparkles,
       title: "AI-Powered Writing",
       description: "Uses advanced AI to create tailored cover letters that match your experience with job requirements."
     }
@@ -46,12 +27,12 @@ const Index = () => {
   
   return (
     <div className="min-h-screen py-8 bg-gradient-to-b from-[#1a242f] to-[#222f3a]">
-      <div className="container max-w-2xl mx-auto space-y-16 pt-16 p-8">
+      <div className="container max-w-6xl mx-auto space-y-16 pt-16 p-8">
         <div className="text-center space-y-6">
           <h1 className="text-6xl font-bold">
             <span className="span-gradient-text">Free AI cover letter generator</span>
           </h1>       
-          <p className="container max-w-2xl mx-auto text-muted-foreground max-w-lg text-white">
+          <p className="text-muted-foreground max-w-lg mx-auto text-white">
             Upload your resume and provide a job posting URL to generate a tailored cover letter
           </p>
         </div>
@@ -60,21 +41,28 @@ const Index = () => {
           <UrlInput onUrlContent={setJobContent} />
         </div>
 
-        <div className="space-y-6">
-          {features.map((feature, index) => (
-            <div 
-              key={index} 
-              className="h-[50px] flex items-center space-x-4"
-            >
-              <div className="flex-shrink-0">
-                {feature.icon}
+        <div className="space-y-24">
+          {features.map((feature, index) => {
+            const Icon = feature.icon;
+            return (
+              <div 
+                key={index} 
+                className={`flex items-center gap-16 ${
+                  index % 2 === 1 ? 'flex-row-reverse' : ''
+                }`}
+              >
+                <div className="flex-1 flex justify-center">
+                  <div className="w-32 h-32 flex items-center justify-center bg-white/10 rounded-2xl">
+                    <Icon className="w-16 h-16 text-white" />
+                  </div>
+                </div>
+                <div className="flex-1 space-y-4">
+                  <h3 className="text-2xl font-semibold text-white">{feature.title}</h3>
+                  <p className="text-gray-300 text-lg leading-relaxed">{feature.description}</p>
+                </div>
               </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-semibold text-white">{feature.title}</h3>
-                <p className="text-gray-300">{feature.description}</p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
