@@ -36,16 +36,26 @@ const JobProcessor = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            inputs: `Extract ONLY the job title from this job description. Return ONLY the job title, nothing else, no punctuation: ${jobContent.substring(0, 500)}`,
+            inputs: `Extract ONLY the job title from this job posting. Return ONLY the exact job title, nothing else: ${jobContent.substring(0, 500)}`,
             parameters: {
-              max_new_tokens: 50,
+              max_new_tokens: 20,
               temperature: 0.1,
+              top_p: 0.1,
+              return_full_text: false
             }
           }),
         });
 
         const data = await response.json();
-        const extractedTitle = data[0]?.generated_text?.trim() || 'Job Position';
+        let extractedTitle = data[0]?.generated_text?.trim() || 'Job Position';
+        
+        // Clean up the response
+        extractedTitle = extractedTitle
+          .split('\n')[0] // Take only the first line
+          .replace(/^(job title:|title:|position:|role:)/i, '') // Remove common prefixes
+          .replace(/["']/g, '') // Remove quotes
+          .trim();
+
         setJobTitle(extractedTitle);
       } catch (error) {
         console.error('Error extracting job title:', error);
@@ -97,8 +107,8 @@ const JobProcessor = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#1a242f] to-[#222f3a] py-8">
-      <div className="container max-w-[950px] mx-auto space-y-8 p-8">
+    <div className="min-h-screen bg-gradient-to-b from-[#1a242f] to-[#222f3a]">
+      <div className="container max-w-[950px] mx-auto space-y-8 px-6 py-8">
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-bold text-white">{jobTitle}</h1>
           <p className="text-gray-300">Upload your resume or connect your LinkedIn profile</p>

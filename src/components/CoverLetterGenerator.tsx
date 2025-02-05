@@ -30,7 +30,7 @@ export const CoverLetterGenerator = ({ cvContent, jobContent }: CoverLetterGener
     try {
       const hf = new HfInference("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");
       
-      const finalPrompt = `Create a concise and professional cover letter (max 250 words) based on the following CV and job description. Output ONLY the cover letter text.
+      const finalPrompt = `Generate a professional cover letter based on the following CV and job description. Return ONLY the cover letter text, with no additional text, labels, or formatting instructions. Keep it under 250 words.
 
 Resume Content:
 ${cvContent}
@@ -46,10 +46,18 @@ ${jobContent}`;
           temperature: 0.7,
           top_p: 0.9,
           repetition_penalty: 1.1,
+          return_full_text: false
         },
       });
 
-      const generatedText = response.generated_text.trim();
+      let generatedText = response.generated_text.trim();
+      
+      // Clean up the response to ensure we only get the cover letter
+      generatedText = generatedText
+        .replace(/^(cover letter:|dear.*?:)/i, '') // Remove common prefixes
+        .replace(/sincerely,?.*$/i, '') // Remove signature
+        .trim();
+
       setCoverLetter(generatedText);
 
       toast({
