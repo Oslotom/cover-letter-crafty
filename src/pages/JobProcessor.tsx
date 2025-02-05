@@ -27,7 +27,6 @@ const JobProcessor = () => {
       return;
     }
 
-    // Extract job title from content using HuggingFace
     const extractJobTitle = async () => {
       try {
         const response = await fetch('https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2', {
@@ -37,7 +36,11 @@ const JobProcessor = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            inputs: `Extract only the job title from this job description. Return only the job title, nothing else: ${jobContent}`,
+            inputs: `Extract ONLY the job title from this job description. Return ONLY the job title, nothing else, no punctuation: ${jobContent.substring(0, 500)}`,
+            parameters: {
+              max_new_tokens: 50,
+              temperature: 0.1,
+            }
           }),
         });
 
@@ -66,10 +69,16 @@ const JobProcessor = () => {
       });
       return;
     }
+
     setIsProcessing(true);
     try {
-      // Mock LinkedIn data processing for now
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(linkedinUrl)}`);
+      const data = await response.json();
+      
+      if (!data.contents || data.contents.includes('authwall')) {
+        throw new Error('Profile not accessible');
+      }
+
       const mockLinkedInData = `Professional with experience in...`;
       setCvContent(mockLinkedInData);
       toast({
@@ -79,7 +88,7 @@ const JobProcessor = () => {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to process LinkedIn profile",
+        description: "Make sure your LinkedIn profile is public",
         variant: "destructive"
       });
     } finally {
@@ -89,7 +98,7 @@ const JobProcessor = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1a242f] to-[#222f3a] py-8">
-      <div className="container max-w-2xl mx-auto space-y-8 p-8">
+      <div className="container max-w-[950px] mx-auto space-y-8 p-8">
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-bold text-white">{jobTitle}</h1>
           <p className="text-gray-300">Upload your resume or connect your LinkedIn profile</p>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { HfInference } from '@huggingface/inference';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,19 +15,6 @@ export const CoverLetterGenerator = ({ cvContent, jobContent }: CoverLetterGener
   const [coverLetter, setCoverLetter] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
-  const [promptTemplate, setPromptTemplate] = useState('');
-
-  useEffect(() => {
-    const savedPrompt = localStorage.getItem('coverLetterPrompt');
-    if (savedPrompt) {
-      setPromptTemplate(savedPrompt);
-    }
-  }, []);
-
-  const truncateText = (text: string) => {
-    const maxChars = 4000;
-    return text.length > maxChars ? text.slice(0, maxChars) + '...' : text;
-  };
 
   const generateCoverLetter = async () => {
     if (!cvContent || !jobContent) {
@@ -43,31 +30,19 @@ export const CoverLetterGenerator = ({ cvContent, jobContent }: CoverLetterGener
     try {
       const hf = new HfInference("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");
       
-      const truncatedCV = truncateText(cvContent);
-      const truncatedJob = truncateText(jobContent);
-      
-      const finalPrompt = `Create a professional and personalized cover letter based on the following resume and job description. The cover letter should highlight relevant experience and skills that match the job requirements. Format it properly with date, recipient details, and proper closing.
+      const finalPrompt = `Create a concise and professional cover letter (max 250 words) based on the following CV and job description. Output ONLY the cover letter text.
 
 Resume Content:
-${truncatedCV}
+${cvContent}
 
 Job Description:
-${truncatedJob}
-
-Instructions:
-1. Start with proper business letter formatting
-2. Highlight relevant experience and skills from the resume that match the job requirements
-3. Show enthusiasm for the role and company
-4. Keep it concise (250-300 words)
-5. End with a professional closing
-
-Generate the cover letter now:`;
+${jobContent}`;
 
       const response = await hf.textGeneration({
         model: 'mistralai/Mistral-7B-Instruct-v0.2',
         inputs: finalPrompt,
         parameters: {
-          max_new_tokens: 800,
+          max_new_tokens: 500,
           temperature: 0.7,
           top_p: 0.9,
           repetition_penalty: 1.1,
