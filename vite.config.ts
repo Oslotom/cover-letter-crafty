@@ -26,6 +26,11 @@ export default defineConfig(({ mode }) => ({
     commonjsOptions: {
       include: [/pdfjs-dist/, /node_modules/],
       transformMixedEsModules: true
+    },
+    rollupOptions: {
+      external: [
+        'pdfjs-dist/build/pdf.worker.entry'
+      ]
     }
   }
 }));
