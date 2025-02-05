@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CoverLetterGenerator } from '@/components/CoverLetterGenerator';
 import { useToast } from "@/components/ui/use-toast";
+import { Loader2 } from "lucide-react";
 
 interface LocationState {
   jobContent: string;
@@ -26,9 +27,41 @@ const JobProcessor = () => {
       navigate('/');
       return;
     }
-    // Extract job title from content (basic example)
-    const titleMatch = jobContent.match(/(?:job title|position):\s*([^\n]+)/i);
-    setJobTitle(titleMatch?.[1] || 'Job Position');
+    
+    // Extract job title from content using AI
+    const extractJobTitle = async () => {
+      try {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [
+              {
+                role: 'system',
+                content: 'Extract the job title from the following job description. Return only the job title, nothing else.'
+              },
+              {
+                role: 'user',
+                content: jobContent
+              }
+            ],
+          }),
+        });
+
+        const data = await response.json();
+        const extractedTitle = data.choices[0].message.content.trim();
+        setJobTitle(extractedTitle || 'Job Position');
+      } catch (error) {
+        console.error('Error extracting job title:', error);
+        setJobTitle('Job Position');
+      }
+    };
+
+    extractJobTitle();
   }, [jobContent, navigate]);
 
   const handleFileContent = (content: string) => {
@@ -95,7 +128,14 @@ const JobProcessor = () => {
                 disabled={isProcessing || !linkedinUrl}
                 variant="secondary"
               >
-                {isProcessing ? 'Processing...' : 'Process Profile'}
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  'Process Profile'
+                )}
               </Button>
             </div>
           </div>
