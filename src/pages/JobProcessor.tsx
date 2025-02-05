@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FileUpload } from '@/components/FileUpload';
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CoverLetterGenerator } from '@/components/CoverLetterGenerator';
-import { useToast } from "@/components/ui/use-toast";
-import { Loader2, ExternalLink } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2, ExternalLink, Download, Edit2, Save, Link } from "lucide-react";
 
 interface LocationState {
   jobContent: string;
+  sourceUrl?: string;
 }
 
 const JobProcessor = () => {
@@ -16,17 +16,16 @@ const JobProcessor = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [cvContent, setCvContent] = useState<string>('');
-  const [linkedinUrl, setLinkedinUrl] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [jobTitle, setJobTitle] = useState<string>('');
-  const { jobContent } = (location.state as LocationState) || { jobContent: '' };
+  const [isEditing, setIsEditing] = useState(false);
+  const { jobContent, sourceUrl } = (location.state as LocationState) || { jobContent: '' };
 
   useEffect(() => {
     if (!jobContent) {
       navigate('/');
       return;
     }
-
     const extractJobTitle = async () => {
       try {
         const response = await fetch('https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2', {
@@ -74,42 +73,20 @@ Return ONLY the job title, no other text:`,
 
   const handleFileContent = (content: string) => {
     setCvContent(content);
+    toast({
+      title: "Success",
+      description: "Resume uploaded successfully",
+    });
   };
 
-  const handleLinkedinSubmit = async () => {
-    if (!linkedinUrl.includes('linkedin.com')) {
-      toast({
-        title: "Invalid URL",
-        description: "Please enter a valid LinkedIn profile URL",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsProcessing(true);
-    try {
-      const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(linkedinUrl)}`);
-      const data = await response.json();
-      
-      if (!data.contents || data.contents.includes('authwall')) {
-        throw new Error('Profile not accessible');
-      }
-
-      const mockLinkedInData = `Professional with experience in...`;
-      setCvContent(mockLinkedInData);
-      toast({
-        title: "Success",
-        description: "LinkedIn profile processed successfully"
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Make sure your LinkedIn profile is public",
-        variant: "destructive"
-      });
-    } finally {
-      setIsProcessing(false);
-    }
+  const handleDownload = () => {
+    const element = document.createElement("a");
+    const file = new Blob([cvContent], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = "cover-letter.txt";
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
   };
 
   const navigateToJobDetails = () => {
@@ -120,37 +97,50 @@ Return ONLY the job title, no other text:`,
     <div className="min-h-screen bg-gradient-to-b from-[#1a242f] to-[#222f3a]">
       <div className="container max-w-4xl mx-auto space-y-8 px-6 md:px-4 py-20">
         <div className="text-center space-y-6">
-        <p className="text-lg text-white">Create Cover Letter</p>
+          <p className="text-lg text-white">Create Cover Letter</p>
           <button 
             onClick={navigateToJobDetails}
-            className="group text-4xl mx-auto text-white hover:text-blue-400 transition-colors"
+            className="group text-4xl mx-auto text-white hover:text-blue-400 transition-colors flex items-center justify-center gap-2"
           >       
-
             {jobTitle}
-            
             <ExternalLink className="w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
+          
+          {sourceUrl && (
+            <div className="flex items-center justify-center gap-2 text-white/60">
+              <Link className="w-4 h-4" />
+              <a href={sourceUrl} target="_blank" rel="noopener noreferrer" 
+                className="hover:text-white transition-colors">
+                {sourceUrl}
+              </a>
+            </div>
+          )}
         </div>
 
         <div className="space-y-8 bg-white/10 rounded-lg p-6">
-          <div className="space-y-4 lex-1 flex justify-center">
-            <h2 className="text-xl font-semibold text-white">Upload Resume</h2>
-            <FileUpload onFileContent={handleFileContent} contentType="cv" />
+          <div className="space-y-4">
+            <FileUpload 
+              onFileContent={handleFileContent} 
+              contentType="cv"
+              showSuccessInButton={true}
+            />
           </div>
-
-        
         </div>
 
-        {jobContent && (
-          <CoverLetterGenerator
-            cvContent={cvContent}
-            jobContent={jobContent}
-          />
+        {cvContent && (
+          <div className="space-y-4">
+            <CoverLetterGenerator
+              cvContent={cvContent}
+              jobContent={jobContent}
+              isEditing={isEditing}
+              onEdit={() => setIsEditing(!isEditing)}
+              onDownload={handleDownload}
+            />
+          </div>
         )}
       </div>
     </div>
   );
-  
 };
 
 export default JobProcessor;

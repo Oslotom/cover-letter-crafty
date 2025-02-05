@@ -42,6 +42,7 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
       navigate('/job-processor', { 
         state: { 
           jobContent: cleanText,
+          sourceUrl: url, // Add the source URL to the state
         }
       });
     } catch (error) {

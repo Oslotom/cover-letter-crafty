@@ -1,19 +1,28 @@
 import { useState } from 'react';
 import { HfInference } from '@huggingface/inference';
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/use-toast";
-import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2, Download, Edit2, Save, Check } from "lucide-react";
 
 interface CoverLetterGeneratorProps {
   cvContent: string;
   jobContent: string;
+  isEditing?: boolean;
+  onEdit?: () => void;
+  onDownload?: () => void;
 }
 
-export const CoverLetterGenerator = ({ cvContent, jobContent }: CoverLetterGeneratorProps) => {
+export const CoverLetterGenerator = ({ 
+  cvContent, 
+  jobContent, 
+  isEditing,
+  onEdit,
+  onDownload 
+}: CoverLetterGeneratorProps) => {
   const [coverLetter, setCoverLetter] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const { toast } = useToast();
 
   const generateCoverLetter = async () => {
@@ -53,8 +62,6 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
       });
 
       let generatedText = response.generated_text.trim();
-      
-      // Clean up the response but preserve the actual cover letter content
       generatedText = generatedText
         .replace(/^(Dear|To Whom|Hiring|RE:|Resume Content:|Job Description:).*/im, '')
         .replace(/Sincerely,?.*$/im, '')
@@ -63,6 +70,7 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
         .trim();
 
       setCoverLetter(generatedText);
+      setIsSuccess(true);
 
       toast({
         title: "Success",
@@ -83,33 +91,65 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
 
   return (
     <div className="space-y-4">
-      <Button
-        onClick={generateCoverLetter}
-        disabled={isGenerating || !cvContent || !jobContent}
-        className="w-full min-h-[60px]"
-      >
-        {isGenerating ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Generating...
-          </>
-        ) : (
-          "Generate Cover Letter"
-        )}
-      </Button>
-      
-
-      {coverLetter && (
-     
+      {!coverLetter ? (
+        <Button
+          onClick={generateCoverLetter}
+          disabled={isGenerating || !cvContent || !jobContent}
+          className="w-full min-h-[60px]"
+        >
+          {isGenerating ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creating...
+            </>
+          ) : isSuccess ? (
+            <>
+              <Check className="mr-2 h-4 w-4" />
+              Created Successfully
+            </>
+          ) : (
+            "Create Cover Letter"
+          )}
+        </Button>
+      ) : (
+        <div className="space-y-4">
+          <div className="flex justify-end space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onEdit}
+              className="gap-2"
+            >
+              {isEditing ? (
+                <>
+                  <Save className="h-4 w-4" />
+                  Save
+                </>
+              ) : (
+                <>
+                  <Edit2 className="h-4 w-4" />
+                  Edit
+                </>
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onDownload}
+              className="gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Download
+            </Button>
+          </div>
           <Textarea
             value={coverLetter}
             onChange={(e) => setCoverLetter(e.target.value)}
             className="min-h-[1000px] font-serif p-4 text-sm"
-            />
-      
+            readOnly={!isEditing}
+          />
+        </div>
       )}
-
-      
     </div>
   );
 };

@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import * as pdfjs from 'pdfjs-dist';
+import { Button } from "@/components/ui/button";
+import { Upload, Check } from "lucide-react";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.js',
@@ -11,10 +13,12 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 interface FileUploadProps {
   onFileContent: (content: string) => void;
   contentType: 'cv' | 'job';
+  showSuccessInButton?: boolean;
 }
 
-export const FileUpload = ({ onFileContent, contentType }: FileUploadProps) => {
+export const FileUpload = ({ onFileContent, contentType, showSuccessInButton }: FileUploadProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const { toast } = useToast();
 
   const extractTextFromPdf = async (file: File): Promise<string> => {
@@ -70,7 +74,6 @@ export const FileUpload = ({ onFileContent, contentType }: FileUploadProps) => {
         content = await file.text();
       }
 
-      // Upload file to Supabase Storage
       const fileName = `${Date.now()}-${contentType}.txt`;
       
       const { error: uploadError } = await supabase.storage
@@ -79,8 +82,8 @@ export const FileUpload = ({ onFileContent, contentType }: FileUploadProps) => {
 
       if (uploadError) throw uploadError;
 
-      // Pass the content back to the parent component
       onFileContent(content);
+      setIsSuccess(true);
       
       toast({
         title: "Success",
@@ -99,23 +102,29 @@ export const FileUpload = ({ onFileContent, contentType }: FileUploadProps) => {
   };
 
   return (
-    <div className="flex items-center space-x-4">
-      <input
-        type="file"
-        onChange={handleFileChange}
-        accept=".pdf,.txt"
-        disabled={isLoading}
-        className="block w-full text-sm text-slate-500
-          file:mr-4 file:py-2 file:px-4
-          file:rounded-full file:border-0
-          file:text-sm file:font-semibold
-          file:bg-violet-50 file:text-violet-700
-          hover:file:bg-violet-100
-          disabled:opacity-50 disabled:cursor-not-allowed"
-      />
-      {isLoading && (
-        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-violet-700"></div>
-      )}
+    <div className="flex flex-col space-y-4">
+      <div className="flex items-center space-x-4">
+        <input
+          type="file"
+          onChange={handleFileChange}
+          accept=".pdf,.txt"
+          disabled={isLoading}
+          className="hidden"
+          id="file-upload"
+        />
+        <label
+          htmlFor="file-upload"
+          className={`flex-1 flex items-center justify-center px-6 py-4 border-2 border-dashed 
+            border-white/20 rounded-lg cursor-pointer hover:border-white/40 transition-colors
+            ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          <div className="text-center text-white/60">
+            <Upload className="mx-auto h-6 w-6 mb-2" />
+            <p>Click to upload resume (PDF or TXT)</p>
+            <p className="text-sm">Max file size: 5MB</p>
+          </div>
+        </label>
+      </div>
     </div>
   );
 };
