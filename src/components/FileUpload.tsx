@@ -4,9 +4,10 @@ import { useToast } from '@/hooks/use-toast';
 import * as pdfjs from 'pdfjs-dist';
 import { Button } from "@/components/ui/button";
 import { Upload, Check, Loader2 } from "lucide-react";
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry';
 
-// Set worker source path
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+// Set worker source path to local worker file
+pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 interface FileUploadProps {
   onFileContent: (content: string) => void;
