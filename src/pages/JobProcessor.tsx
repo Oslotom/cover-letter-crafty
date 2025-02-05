@@ -9,7 +9,6 @@ import { Loader2 } from "lucide-react";
 
 interface LocationState {
   jobContent: string;
-  jobTitle?: string;
 }
 
 const JobProcessor = () => {
@@ -19,7 +18,7 @@ const JobProcessor = () => {
   const [cvContent, setCvContent] = useState<string>('');
   const [linkedinUrl, setLinkedinUrl] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [jobTitle, setJobTitle] = useState<string>('');
+  const [jobTitle, setJobTitle] = useState<string>('Loading job title...');
   const { jobContent } = location.state as LocationState || {};
 
   useEffect(() => {
@@ -27,8 +26,7 @@ const JobProcessor = () => {
       navigate('/');
       return;
     }
-    
-    // Extract job title from content using AI
+
     const extractJobTitle = async () => {
       try {
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -42,7 +40,7 @@ const JobProcessor = () => {
             messages: [
               {
                 role: 'system',
-                content: 'Extract the job title from the following job description. Return only the job title, nothing else.'
+                content: 'Extract only the job title from the following job description. Return only the job title, nothing else.'
               },
               {
                 role: 'user',
@@ -79,8 +77,6 @@ const JobProcessor = () => {
     }
     setIsProcessing(true);
     try {
-      // Here you would implement the LinkedIn profile scraping
-      // For now, we'll just simulate it
       await new Promise(resolve => setTimeout(resolve, 2000));
       const mockLinkedInData = `Professional with experience in...`;
       setCvContent(mockLinkedInData);

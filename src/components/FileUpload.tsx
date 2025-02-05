@@ -62,12 +62,6 @@ export const FileUpload = ({ onFileContent, contentType }: FileUploadProps) => {
 
     setIsLoading(true);
     try {
-      // First check if user is authenticated
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
-
       let content: string;
       
       if (file.type === 'application/pdf') {
@@ -76,13 +70,12 @@ export const FileUpload = ({ onFileContent, contentType }: FileUploadProps) => {
         content = await file.text();
       }
 
-      // Upload file to Supabase Storage with user ID in path
+      // Upload file to Supabase Storage
       const fileName = `${Date.now()}-${contentType}.txt`;
-      const filePath = `${user.id}/${fileName}`;
       
       const { error: uploadError } = await supabase.storage
         .from('pdfs')
-        .upload(filePath, file);
+        .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
