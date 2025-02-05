@@ -26,24 +26,21 @@ const Index = () => {
   ];
   
   return (
-    <div className="min-h-screen py-8 bg-gradient-to-b from-[#1a242f] to-[#222f3a]">
+    <div className="min-h-screen py-8 bg-background dark:bg-gradient-to-b dark:from-[#1a242f] dark:to-[#222f3a]">
       <div className="container max-w-2xl mx-auto space-y-2 pt-16 p-6">
         <div className="text-center space-y-4">
           <h1 className="text-6xl">
             <span className="span-gradient-text">Create free cover letter with AI </span>
           </h1>       
           
-          <p className="text-muted-foreground text-white p-6">
+          <p className="text-foreground dark:text-white p-6">
             Just add the job description link and upload your resume. No fuss, totally free. No login. 
           </p>
         </div>
         
-        <div className=" max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <UrlInput onUrlContent={setJobContent} />
         </div>
-
-       
-    
       </div>
     </div>
   );

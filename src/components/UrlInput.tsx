@@ -59,11 +59,7 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
       setStage('resume');
     } catch (error) {
       console.error('Error fetching URL:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load job posting",
-        variant: "destructive"
-      });
+      setStatus('Error loading job posting');
     } finally {
       setIsLoading(false);
     }
@@ -99,21 +95,19 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
   };
 
   return (
-    <div className="w-full p-4 rounded-lg bg-white/10 text-white">
+    <div className="w-full p-4 rounded-lg bg-white/10 dark:bg-white/10">
       <div className="flex items-center gap-4">
-        <input
-          type="url"
-          placeholder="Insert link to job description here"
-          className={`flex-1 bg-transparent outline-none border-2 rounded-md px-4 py-2
-            ${url ? 'border-gradient shadow-lg' : 'border-white/20'}
-            transition-all duration-300`}
-          value={status || url}
-          onChange={handleUrlChange}
-          readOnly={isLoading || stage !== 'url'}
-          style={{
-            borderImage: url ? 'linear-gradient(90deg, #0090f7, #ae65fb 25%, #e14fcf 50%, #ef4283 75%, #f4520b) 1' : 'none'
-          }}
-        />
+        <div className={`flex-1 relative ${url ? 'border-gradient' : ''}`}>
+          <input
+            type="url"
+            placeholder="Insert link to job description here"
+            className={`w-full bg-background dark:bg-background/50 outline-none rounded-md px-4 py-2
+              transition-all duration-300`}
+            value={status || url}
+            onChange={handleUrlChange}
+            readOnly={isLoading || stage !== 'url'}
+          />
+        </div>
         {stage === 'url' && (
           <Button
             onClick={handleLoadClick}

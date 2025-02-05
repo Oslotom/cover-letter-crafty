@@ -70,20 +70,6 @@ Return ONLY the job title, no other text:`,
     extractJobTitle();
   }, [jobContent, navigate]);
 
-  const handleDownload = () => {
-    const element = document.createElement("a");
-    const file = new Blob([cvContent || ''], {type: 'text/plain'});
-    element.href = URL.createObjectURL(file);
-    element.download = "cover-letter.txt";
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-  };
-
-  const navigateToJobDetails = () => {
-    navigate('/job-details', { state: { jobContent, jobTitle } });
-  };
-
   if (!cvContent) {
     navigate('/');
     return null;
@@ -95,9 +81,9 @@ Return ONLY the job title, no other text:`,
       
       <div className="container max-w-4xl mx-auto space-y-8 px-6 md:px-4 py-20 pt-28">
         <div className="text-center space-y-6">
-          <p className="text-lg text-muted-foreground">Create Cover Letter</p>
+          <p className="text-lg text-muted-foreground">Your Cover Letter</p>
           <button 
-            onClick={navigateToJobDetails}
+            onClick={() => {}}
             className="group text-4xl mx-auto text-foreground hover:text-primary transition-colors flex items-center justify-center gap-2"
           >       
             {jobTitle}
@@ -121,7 +107,15 @@ Return ONLY the job title, no other text:`,
             jobContent={jobContent}
             isEditing={isEditing}
             onEdit={() => setIsEditing(!isEditing)}
-            onDownload={handleDownload}
+            onDownload={() => {
+              const element = document.createElement("a");
+              const file = new Blob([cvContent || ''], {type: 'text/plain'});
+              element.href = URL.createObjectURL(file);
+              element.download = "cover-letter.txt";
+              document.body.appendChild(element);
+              element.click();
+              document.body.removeChild(element);
+            }}
           />
         </div>
       </div>

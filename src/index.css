@@ -68,7 +68,18 @@
 }
 
 .border-gradient {
+  position: relative;
+  border-radius: 0.5rem;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.border-gradient::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(90deg, #0090f7, #ae65fb 25%, #e14fcf 50%, #ef4283 75%, #f4520b);
+  border-radius: 0.6rem;
+  z-index: -1;
 }
 
 .spanGradientText {

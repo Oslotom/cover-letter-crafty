@@ -5,10 +5,8 @@ import * as pdfjs from 'pdfjs-dist';
 import { Button } from "@/components/ui/button";
 import { Upload, Check, Loader2 } from "lucide-react";
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.js',
-  import.meta.url
-).toString();
+// Set worker source path
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 interface FileUploadProps {
   onFileContent: (content: string) => void;
@@ -84,11 +82,6 @@ export const FileUpload = ({ onFileContent, contentType, showSuccessInButton }: 
 
       onFileContent(content);
       setIsSuccess(true);
-      
-      toast({
-        title: "Success",
-        description: "File processed successfully"
-      });
     } catch (error) {
       console.error('Error processing file:', error);
       toast({
