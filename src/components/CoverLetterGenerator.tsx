@@ -46,23 +46,28 @@ export const CoverLetterGenerator = ({ cvContent, jobContent }: CoverLetterGener
       const truncatedCV = truncateText(cvContent);
       const truncatedJob = truncateText(jobContent);
       
-      const finalPrompt = (promptTemplate || `Create a concise and professional cover letter (max 250 words) based on the following CV and job description. Output ONLY the cover letter text.
+      const finalPrompt = `Create a professional and personalized cover letter based on the following resume and job description. The cover letter should highlight relevant experience and skills that match the job requirements. Format it properly with date, recipient details, and proper closing.
 
-CV Summary:
-{cv}
+Resume Content:
+${truncatedCV}
 
-Job Summary:
-{job}
+Job Description:
+${truncatedJob}
 
-.`)
-        .replace('{cv}', truncatedCV)
-        .replace('{job}', truncatedJob);
+Instructions:
+1. Start with proper business letter formatting
+2. Highlight relevant experience and skills from the resume that match the job requirements
+3. Show enthusiasm for the role and company
+4. Keep it concise (250-300 words)
+5. End with a professional closing
+
+Generate the cover letter now:`;
 
       const response = await hf.textGeneration({
         model: 'mistralai/Mistral-7B-Instruct-v0.2',
         inputs: finalPrompt,
         parameters: {
-          max_new_tokens: 400,
+          max_new_tokens: 800,
           temperature: 0.7,
           top_p: 0.9,
           repetition_penalty: 1.1,
@@ -70,8 +75,7 @@ Job Summary:
       });
 
       const generatedText = response.generated_text.trim();
-      const extractedLetter = extractCoverLetter(generatedText);
-      setCoverLetter(extractedLetter);
+      setCoverLetter(generatedText);
 
       toast({
         title: "Success",
@@ -90,37 +94,12 @@ Job Summary:
     }
   };
 
-  const extractCoverLetter = (text: string) => {
-    // More robust extraction using regex (still needs refinement based on LLM output patterns)
-
-    // Example Regex (ADAPT THIS TO YOUR LLM OUTPUT):
-    const regex = /(Dear\s[a-zA-Z\s.]*,\n[\s\S]*?(Sincerely|Best regards|Regards|Yours sincerely|Respectfully),\n[a-zA-Z\s]*)/i; // Improved regex, added more closings
-    const match = text.match(regex);
-
-    if (match) {
-      return match[0].trim();
-    }
-
-    // Fallback: If no clear match, try to find "Dear" and common closings (less reliable)
-    const startMarker = text.indexOf("Dear");
-    const endMarker = text.lastIndexOf("Sincerely,") || text.lastIndexOf("Best regards,") || text.lastIndexOf("Regards,") || text.lastIndexOf("Yours sincerely,") || text.lastIndexOf("Respectfully,");
-
-    if (startMarker !== -1 && endMarker !== -1) {
-      return text.substring(startMarker, endMarker + 15).trim(); // +15 to include longer closings
-    } else if (startMarker !== -1) {
-        return text.substring(startMarker).trim();
-    }
-
-    return text.trim(); // Ultimate fallback: return the whole thing
-  };
-
-
   return (
     <div className="space-y-4">
       <Button
         onClick={generateCoverLetter}
         disabled={isGenerating || !cvContent || !jobContent}
-        className="w-full min-h-[60px] "
+        className="w-full min-h-[60px]"
       >
         {isGenerating ? (
           <>

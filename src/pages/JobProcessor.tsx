@@ -19,7 +19,7 @@ const JobProcessor = () => {
   const [linkedinUrl, setLinkedinUrl] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [jobTitle, setJobTitle] = useState<string>('Loading job title...');
-  const { jobContent } = location.state as LocationState || {};
+  const { jobContent } = (location.state as LocationState) || { jobContent: '' };
 
   useEffect(() => {
     if (!jobContent) {
@@ -27,32 +27,23 @@ const JobProcessor = () => {
       return;
     }
 
+    // Extract job title from content using HuggingFace
     const extractJobTitle = async () => {
       try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        const response = await fetch('https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+            'Authorization': 'Bearer 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',
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            messages: [
-              {
-                role: 'system',
-                content: 'Extract only the job title from the following job description. Return only the job title, nothing else.'
-              },
-              {
-                role: 'user',
-                content: jobContent
-              }
-            ],
+            inputs: `Extract only the job title from this job description. Return only the job title, nothing else: ${jobContent}`,
           }),
         });
 
         const data = await response.json();
-        const extractedTitle = data.choices[0].message.content.trim();
-        setJobTitle(extractedTitle || 'Job Position');
+        const extractedTitle = data[0]?.generated_text?.trim() || 'Job Position';
+        setJobTitle(extractedTitle);
       } catch (error) {
         console.error('Error extracting job title:', error);
         setJobTitle('Job Position');
@@ -77,6 +68,7 @@ const JobProcessor = () => {
     }
     setIsProcessing(true);
     try {
+      // Mock LinkedIn data processing for now
       await new Promise(resolve => setTimeout(resolve, 2000));
       const mockLinkedInData = `Professional with experience in...`;
       setCvContent(mockLinkedInData);
@@ -136,7 +128,7 @@ const JobProcessor = () => {
             </div>
           </div>
 
-          {(cvContent || jobContent) && (
+          {jobContent && (
             <CoverLetterGenerator
               cvContent={cvContent}
               jobContent={jobContent}
