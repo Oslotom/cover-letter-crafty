@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './ui/use-toast';
 import * as pdfjs from 'pdfjs-dist';
 
-// Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.js',
   import.meta.url
@@ -55,6 +54,12 @@ export function FileUpload({ onFileContent }: FileUploadProps) {
 
     setIsLoading(true);
     try {
+      // First check if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
       let content: string;
       
       if (file.type === 'application/pdf') {
@@ -64,11 +69,13 @@ export function FileUpload({ onFileContent }: FileUploadProps) {
         content = await file.text();
       }
 
-      // Upload file to Supabase Storage
+      // Upload file to Supabase Storage with user ID in path
       const fileName = `${Date.now()}-${file.name}`;
+      const filePath = `${user.id}/${fileName}`;
+      
       const { error: uploadError } = await supabase.storage
         .from('pdfs')
-        .upload(fileName, file);
+        .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
@@ -82,7 +89,7 @@ export function FileUpload({ onFileContent }: FileUploadProps) {
       console.error('Error processing file:', error);
       toast({
         title: "Error",
-        description: "Failed to process file",
+        description: error instanceof Error ? error.message : "Failed to process file",
         variant: "destructive"
       });
     } finally {
