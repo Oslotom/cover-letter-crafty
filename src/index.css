@@ -60,7 +60,6 @@
   }
 }
 
-/* Example using plain CSS */
 .span-gradient-text {
   -webkit-text-fill-color: transparent;
   background-image: linear-gradient(90deg, #0090f7, #ae65fb 25%, #e14fcf 50%, #ef4283 75%, #f4520b);
@@ -68,8 +67,11 @@
   background-clip: text;
 }
 
-/* Example using CSS Modules (if applicable) */
-.spanGradientText { /* Note the camelCase */
+.border-gradient {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.spanGradientText {
   -webkit-text-fill-color: transparent;
   background-image: linear-gradient(90deg, #0090f7, #ae65fb 25%, #e14fcf 50%, #ef4283 75%, #f4520b);
   -webkit-background-clip: text;

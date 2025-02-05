@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { FileUpload } from '@/components/FileUpload';
 import { Button } from "@/components/ui/button";
 import { CoverLetterGenerator } from '@/components/CoverLetterGenerator';
 import { useToast } from "@/hooks/use-toast";
@@ -10,17 +9,17 @@ import { ExternalLink, Link } from "lucide-react";
 interface LocationState {
   jobContent: string;
   sourceUrl?: string;
+  cvContent?: string;
 }
 
 const JobProcessor = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [cvContent, setCvContent] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [jobTitle, setJobTitle] = useState<string>('');
   const [isEditing, setIsEditing] = useState(false);
-  const { jobContent, sourceUrl } = (location.state as LocationState) || { jobContent: '' };
+  const { jobContent, sourceUrl, cvContent } = (location.state as LocationState) || { jobContent: '' };
 
   useEffect(() => {
     if (!jobContent) {
@@ -54,7 +53,6 @@ Return ONLY the job title, no other text:`,
         const data = await response.json();
         let extractedTitle = data[0]?.generated_text?.trim() || 'Job Position';
         
-        // Clean up the response
         extractedTitle = extractedTitle
           .replace(/^(job title:|title:|position:|role:|here's|this is|the|a|an|for)/i, '')
           .replace(/["']/g, '')
@@ -72,17 +70,9 @@ Return ONLY the job title, no other text:`,
     extractJobTitle();
   }, [jobContent, navigate]);
 
-  const handleFileContent = (content: string) => {
-    setCvContent(content);
-    toast({
-      title: "Success",
-      description: "Resume uploaded successfully",
-    });
-  };
-
   const handleDownload = () => {
     const element = document.createElement("a");
-    const file = new Blob([cvContent], {type: 'text/plain'});
+    const file = new Blob([cvContent || ''], {type: 'text/plain'});
     element.href = URL.createObjectURL(file);
     element.download = "cover-letter.txt";
     document.body.appendChild(element);
@@ -93,6 +83,11 @@ Return ONLY the job title, no other text:`,
   const navigateToJobDetails = () => {
     navigate('/job-details', { state: { jobContent, jobTitle } });
   };
+
+  if (!cvContent) {
+    navigate('/');
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -120,27 +115,15 @@ Return ONLY the job title, no other text:`,
           )}
         </div>
 
-        <div className="space-y-8 bg-card rounded-lg p-6 shadow-sm">
-          <div className="space-y-4">
-            <FileUpload 
-              onFileContent={handleFileContent} 
-              contentType="cv"
-              showSuccessInButton={true}
-            />
-          </div>
+        <div className="space-y-4">
+          <CoverLetterGenerator
+            cvContent={cvContent || ''}
+            jobContent={jobContent}
+            isEditing={isEditing}
+            onEdit={() => setIsEditing(!isEditing)}
+            onDownload={handleDownload}
+          />
         </div>
-
-        {cvContent && (
-          <div className="space-y-4">
-            <CoverLetterGenerator
-              cvContent={cvContent}
-              jobContent={jobContent}
-              isEditing={isEditing}
-              onEdit={() => setIsEditing(!isEditing)}
-              onDownload={handleDownload}
-            />
-          </div>
-        )}
       </div>
     </div>
   );
