@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FileText, Loader2, Download } from 'lucide-react';
 import { HfInference } from '@huggingface/inference';
+import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 
 interface UrlInputProps {
   onUrlContent: (content: string) => void;
@@ -8,8 +10,6 @@ interface UrlInputProps {
 
 export function UrlInput({ onUrlContent }: UrlInputProps) {
   const [url, setUrl] = useState('');
-  const [showLoad, setShowLoad] = useState(false);
-  const [currentStep, setCurrentStep] = useState<string | null>(null);
   const [showFileUpload, setShowFileUpload] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [coverLetter, setCoverLetter] = useState<string | null>(null);
@@ -18,6 +18,8 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
   const [jobContent, setJobContent] = useState('');
   const [cvContent, setCvContent] = useState('');
   const [showInput, setShowInput] = useState(true);
+  const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const urlSteps = [
     'Opening website...',
@@ -40,20 +42,25 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
 
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUrl(e.target.value);
-    setShowLoad(e.target.value.trim() !== '');
   };
 
   const runStepSequence = async (steps: string[], finalAction?: () => void) => {
-    for (const step of steps) {
-      setCurrentStep(step);
-      await new Promise(resolve => setTimeout(resolve, 3000));
+    setIsProcessing(true);
+    setCurrentStepIndex(0);
+    
+    for (let i = 0; i < steps.length; i++) {
+      setCurrentStepIndex(i);
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Reduced to 2 seconds
     }
-    setCurrentStep(null);
+    
+    setCurrentStepIndex(0);
+    setIsProcessing(false);
     if (finalAction) finalAction();
   };
 
   const handleLoadClick = async () => {
-    setShowLoad(false);
+    if (!url.trim()) return;
+    
     setShowInput(false);
     try {
       const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
@@ -74,8 +81,8 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
       await runStepSequence(urlSteps, () => setShowFileUpload(true));
     } catch (error) {
       console.error('Error fetching URL:', error);
-      setCurrentStep('Error fetching job description');
       setShowInput(true);
+      setIsProcessing(false);
     }
   };
 
@@ -179,10 +186,10 @@ ${truncatedJob}
   };
 
   return (
-    <div className="relative">
-      <div className="max-h-[74px] w-full p-6 rounded-lg bg-white/10 text-white border border-white/20 min-h-[70px] flex items-center justify-between">
+    <div className="relative space-y-4">
+      <div className="w-full p-6 rounded-lg bg-white/10 text-white border border-white/20 min-h-[70px]">
         {showInput ? (
-          <>
+          <div className="flex items-center gap-4">
             <input
               type="url"
               placeholder="Paste job posting URL"
@@ -190,28 +197,29 @@ ${truncatedJob}
               value={url}
               onChange={handleUrlChange}
             />
-            {showLoad && (
-              <button
-                onClick={handleLoadClick}
-                className="ml-4 px-6 h-[64px] bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:opacity-90 transition flex items-center space-x-2"
-              >
-                <span>✨ Load</span>
-              </button>
-            )}
-          </>
+            <Button
+              onClick={handleLoadClick}
+              variant="secondary"
+              className="px-6 h-[40px] hover:opacity-90 transition flex items-center gap-2"
+              disabled={isProcessing}
+            >
+              {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+              <span>Load</span>
+            </Button>
+          </div>
         ) : (
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center space-x-3">
-              {currentStep && (
+              {isProcessing && (
                 <>
                   <Loader2 className="animate-spin" />
-                  <span className="text-white">{currentStep}</span>
+                  <span className="text-white">{urlSteps[currentStepIndex]}</span>
                 </>
               )}
-              {showFileUpload && !currentStep && (
+              {showFileUpload && !isProcessing && (
                 <span className="text-white">Upload your resume as PDF or text file</span>
               )}
-              {showViewButton && !currentStep && !showFileUpload && (
+              {showViewButton && !isProcessing && !showFileUpload && (
                 <span className="text-white">Click to show your cover letter</span>
               )}
             </div>
@@ -227,7 +235,7 @@ ${truncatedJob}
                   />
                   <label
                     htmlFor="file-upload"
-                    className="px-6 h-[64px] bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:opacity-90 transition cursor-pointer flex items-center space-x-2"
+                    className="px-6 h-[40px] bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:opacity-90 transition cursor-pointer flex items-center space-x-2"
                   >
                     <FileText className="w-4 h-4" />
                     <span>Choose File</span>
@@ -235,29 +243,38 @@ ${truncatedJob}
                 </div>
               )}
               {showViewButton && (
-                <button
+                <Button
                   onClick={toggleCoverLetter}
-                  className="px-6 h-[64px] bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg hover:opacity-90 transition"
+                  className="px-6 h-[40px] bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg hover:opacity-90 transition"
                 >
                   {showCoverLetter ? 'Hide Cover Letter' : 'View Cover Letter'}
-                </button>
+                </Button>
               )}
             </div>
           </div>
         )}
       </div>
+
+      {/* Progress indicator */}
+      {isProcessing && (
+        <div className="space-y-2">
+          <Progress value={((currentStepIndex + 1) / urlSteps.length) * 100} className="h-2" />
+          <p className="text-sm text-white/70 text-center">
+            Step {currentStepIndex + 1} of {urlSteps.length}
+          </p>
+        </div>
+      )}
      
       {showCoverLetter && coverLetter && (
-        
         <div className="mt-4 p-6 bg-white/10 rounded-lg text-white">
           <div className="flex justify-end mb-4">
-            <button
+            <Button
               onClick={downloadPDF}
-              className="px-6 h-[64px] bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:opacity-90 transition flex items-center space-x-2"
+              className="px-6 h-[40px] bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:opacity-90 transition flex items-center space-x-2"
             >
               <Download className="w-4 h-4" />
               <span>Download</span>
-            </button>
+            </Button>
           </div>
           <pre className="whitespace-pre-wrap font-sans">{coverLetter}</pre>
         </div>
