@@ -50,7 +50,7 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
     
     for (let i = 0; i < steps.length; i++) {
       setCurrentStepIndex(i);
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Reduced to 2 seconds
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
     
     setCurrentStepIndex(0);
@@ -91,7 +91,7 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
     if (!selectedFile) return;
 
     if (selectedFile.type !== 'text/plain' && selectedFile.type !== 'application/pdf') {
-      setCurrentStep('Error: Please upload a PDF or text file');
+      setCurrentStepIndex(0);
       return;
     }
 
@@ -108,7 +108,7 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
       });
     } catch (error) {
       console.error('Error reading file:', error);
-      setCurrentStep('Error processing file');
+      setCurrentStepIndex(0);
       setShowFileUpload(true);
     }
   };
@@ -145,7 +145,7 @@ ${truncatedJob}
       setCoverLetter(extractCoverLetter(generatedText));
     } catch (error) {
       console.error('Error generating cover letter:', error);
-      setCurrentStep('Error generating cover letter');
+      setCurrentStepIndex(0);
     }
   };
 
