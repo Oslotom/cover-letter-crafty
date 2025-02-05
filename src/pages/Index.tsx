@@ -30,7 +30,7 @@ const Index = () => {
       <div className="container max-w-4xl mx-auto space-y-12 pt-16 p-6">
         <div className="text-center space-y-6">
           <h1 className="text-6xl font-bold">
-            <span className="span-gradient-text">Free AI cover letter generator</span>
+            <span className="span-gradient-text">Create Free Cover Letter with AI</span>
           </h1>       
           <p className="text-muted-foreground max-w-lg mx-auto text-white">
             Upload your resume and provide a job posting URL to generate a tailored cover letter
