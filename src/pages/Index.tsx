@@ -27,7 +27,7 @@ const Index = () => {
   
   return (
     <div className="min-h-screen py-8 bg-gradient-to-b from-[#1a242f] to-[#222f3a]">
-      <div className="container max-w-6xl mx-auto space-y-16 pt-16 p-8">
+      <div className="container max-w-4xl mx-auto space-y-12 pt-16 p-6">
         <div className="text-center space-y-6">
           <h1 className="text-6xl font-bold">
             <span className="span-gradient-text">Free AI cover letter generator</span>
@@ -37,23 +37,23 @@ const Index = () => {
           </p>
         </div>
         
-        <div className="space-y-16">
+        <div className="space-y-12 max-w-3xl mx-auto">
           <UrlInput onUrlContent={setJobContent} />
         </div>
 
-        <div className="space-y-24">
+        <div className="space-y-4">
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
               <div 
                 key={index} 
-                className={`flex items-center gap-16 ${
+                className={`flex items-center ${
                   index % 2 === 1 ? 'flex-row-reverse' : ''
                 }`}
               >
                 <div className="flex-1 flex justify-center">
-                  <div className="w-32 h-32 flex items-center justify-center bg-white/10 rounded-2xl">
-                    <Icon className="w-16 h-16 text-white" />
+                  <div className="w-16 h-16 flex items-center justify-center bg-white/10 rounded-2xl">
+                    <Icon className="w-8 h-8 text-white" />
                   </div>
                 </div>
                 <div className="flex-1 space-y-4">

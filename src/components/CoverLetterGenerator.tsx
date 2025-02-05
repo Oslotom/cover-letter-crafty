@@ -97,16 +97,19 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
           "Generate Cover Letter"
         )}
       </Button>
+      
 
       {coverLetter && (
-        <Card className="p-4">
+     
           <Textarea
             value={coverLetter}
             onChange={(e) => setCoverLetter(e.target.value)}
-            className="min-h-[650px] font-serif"
-          />
-        </Card>
+            className="min-h-[1000px] font-serif p-4 text-sm"
+            />
+      
       )}
+
+      
     </div>
   );
 };

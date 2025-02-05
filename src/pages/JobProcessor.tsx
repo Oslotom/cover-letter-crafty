@@ -118,61 +118,39 @@ Return ONLY the job title, no other text:`,
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1a242f] to-[#222f3a]">
-      <div className="container max-w-[950px] mx-auto space-y-8 px-6 md:px-6 py-8">
-        <div className="text-center space-y-4">
+      <div className="container max-w-4xl mx-auto space-y-8 px-6 md:px-4 py-20">
+        <div className="text-center space-y-6">
+        <p className="text-lg text-white">Create Cover Letter</p>
           <button 
             onClick={navigateToJobDetails}
-            className="group text-4xl font-bold text-white hover:text-blue-400 transition-colors flex items-center justify-center gap-2"
-          >
+            className="group text-4xl mx-auto text-white hover:text-blue-400 transition-colors"
+          >       
+
             {jobTitle}
+            
             <ExternalLink className="w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
-          <p className="text-gray-300">Upload your resume or connect your LinkedIn profile</p>
         </div>
 
         <div className="space-y-8 bg-white/10 rounded-lg p-6">
-          <div className="space-y-4">
+          <div className="space-y-4 lex-1 flex justify-center">
             <h2 className="text-xl font-semibold text-white">Upload Resume</h2>
             <FileUpload onFileContent={handleFileContent} contentType="cv" />
           </div>
 
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-white">Or use LinkedIn Profile</h2>
-            <div className="flex space-x-4">
-              <Input
-                type="url"
-                placeholder="Paste your LinkedIn profile URL"
-                value={linkedinUrl}
-                onChange={(e) => setLinkedinUrl(e.target.value)}
-                className="flex-1 bg-white/5 text-white"
-              />
-              <Button 
-                onClick={handleLinkedinSubmit}
-                disabled={isProcessing || !linkedinUrl}
-                variant="secondary"
-              >
-                {isProcessing ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  'Process Profile'
-                )}
-              </Button>
-            </div>
-          </div>
-
-          {jobContent && (
-            <CoverLetterGenerator
-              cvContent={cvContent}
-              jobContent={jobContent}
-            />
-          )}
+        
         </div>
+
+        {jobContent && (
+          <CoverLetterGenerator
+            cvContent={cvContent}
+            jobContent={jobContent}
+          />
+        )}
       </div>
     </div>
   );
+  
 };
 
 export default JobProcessor;
