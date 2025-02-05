@@ -18,7 +18,7 @@ const JobProcessor = () => {
   const [cvContent, setCvContent] = useState<string>('');
   const [linkedinUrl, setLinkedinUrl] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [jobTitle, setJobTitle] = useState<string>('Loading job title...');
+  const [jobTitle, setJobTitle] = useState<string>('');
   const { jobContent } = (location.state as LocationState) || { jobContent: '' };
 
   useEffect(() => {
@@ -36,9 +36,9 @@ const JobProcessor = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            inputs: `Extract ONLY the job title from this job posting. Return ONLY the job title, no additional text or formatting: ${jobContent.substring(0, 500)}`,
+            inputs: `Extract the job title from this job posting. Output ONLY the exact job title with no additional text: ${jobContent.substring(0, 500)}`,
             parameters: {
-              max_new_tokens: 15,
+              max_new_tokens: 10,
               temperature: 0.1,
               top_p: 0.1,
               return_full_text: false
@@ -52,9 +52,10 @@ const JobProcessor = () => {
         // Clean up the response
         extractedTitle = extractedTitle
           .split('\n')[0] // Take only the first line
-          .replace(/^(job title:|title:|position:|role:|here's|this is|the|a)/i, '') // Remove common prefixes
+          .replace(/^(job title:|title:|position:|role:|here's|this is|the|a|for|senior|junior)/i, '') // Remove common prefixes
           .replace(/["']/g, '') // Remove quotes
           .replace(/[:.,!?]/g, '') // Remove punctuation
+          .replace(/^\W+|\W+$/g, '') // Remove leading/trailing non-word characters
           .trim();
 
         setJobTitle(extractedTitle);
@@ -109,7 +110,7 @@ const JobProcessor = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1a242f] to-[#222f3a]">
-      <div className="container max-w-[950px] mx-auto space-y-8 px-6 py-8">
+      <div className="container max-w-[950px] mx-auto space-y-8 px-6 md:px-6 py-8">
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-bold text-white">{jobTitle}</h1>
           <p className="text-gray-300">Upload your resume or connect your LinkedIn profile</p>

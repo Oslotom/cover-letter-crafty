@@ -30,7 +30,7 @@ export const CoverLetterGenerator = ({ cvContent, jobContent }: CoverLetterGener
     try {
       const hf = new HfInference("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");
       
-      const finalPrompt = `Generate a professional cover letter based on the following CV and job description. Return ONLY the cover letter text, with no additional text, labels, or formatting instructions. Keep it under 250 words and do not include any salutations or signatures.
+      const finalPrompt = `Write a professional cover letter based on the CV and job description below. Output ONLY the cover letter text with no salutations, signatures, or additional formatting. Keep it under 250 words.
 
 Resume Content:
 ${cvContent}
@@ -52,13 +52,15 @@ ${jobContent}`;
 
       let generatedText = response.generated_text.trim();
       
-      // Clean up the response to ensure we only get the cover letter
+      // Clean up the response
       generatedText = generatedText
-        .replace(/^(cover letter:|dear.*?:|to whom.*?:|hiring.*?:)/i, '') // Remove common prefixes
-        .replace(/sincerely,?.*$/i, '') // Remove signature
-        .replace(/best regards.*$/i, '') // Remove alternative signatures
-        .replace(/yours.*$/i, '') // Remove other signature variants
-        .replace(/^[^a-z\d]*|[^a-z\d]*$/gi, '') // Remove leading/trailing non-alphanumeric characters
+        .replace(/^(cover letter:|dear.*?:|to whom.*?:|hiring.*?:|re:)/i, '')
+        .replace(/sincerely,?.*$/i, '')
+        .replace(/best regards.*$/i, '')
+        .replace(/yours.*$/i, '')
+        .replace(/^[^a-z\d]*|[^a-z\d]*$/gi, '')
+        .replace(/resume content:.*?job description:/is, '')
+        .replace(/job description:.*$/is, '')
         .trim();
 
       setCoverLetter(generatedText);
