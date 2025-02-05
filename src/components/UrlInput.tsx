@@ -57,11 +57,11 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
   };
 
   return (
-    <div className="w-full p-6 rounded-lg bg-white/10 text-white border border-white/20">
+    <div className="w-full p-4 rounded-lg bg-white/10 text-white border border-white/20">
       <div className="flex items-center gap-4">
         <input
           type="url"
-          placeholder="Paste job posting URL"
+          placeholder="Insert link to job description here"
           className="flex-1 bg-transparent outline-none"
           value={url}
           onChange={handleUrlChange}
@@ -69,7 +69,7 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
         <Button
           onClick={handleLoadClick}
           variant="default"
-          className="px-6 h-[40px] bg-gradient-to-r from-purple-500 to-pink-600 hover:opacity-90 transition flex items-center gap-2"
+          className="px-10 h-[50px] bg-gradient-to-r from-purple-500 to-pink-600 hover:opacity-90 transition flex items-center gap-2"
           disabled={isLoading}
         >
           {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}

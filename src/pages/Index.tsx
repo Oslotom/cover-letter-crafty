@@ -42,29 +42,8 @@ const Index = () => {
           <UrlInput onUrlContent={setJobContent} />
         </div>
 
-        <div className="space-y-6 p-2">
-          {features.map((feature, index) => {
-            const Icon = feature.icon;
-            return (
-              <div 
-                key={index} 
-                className={`flex items-center ${
-                  index % 2 === 1 ? 'flex-row-reverse' : ''
-                }`}
-              >
-                <div className="w-[70%] justify-center">
-                  <div className=" w-16 h-16 p-4 flex items-center justify-center bg-white/10 rounded-2xl">
-                    <Icon className="w-8 h-8 text-white" />
-                  </div>
-                </div>
-                <div className=" space-y-2">
-                  <h3 className="text-2xl font-semibold text-white">{feature.title}</h3>
-                  <p className="text-gray-300 text-lg leading-relaxed">{feature.description}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+       
+    
       </div>
     </div>
   );
