@@ -23,11 +23,26 @@ export default function MyResume() {
   const [contact, setContact] = useState<string>('');
   const { toast } = useToast();
 
+  const truncateText = (text: string, maxLength: number = 10000): string => {
+    return text.slice(0, maxLength);
+  };
+
   const processResumeWithAI = async (content: string) => {
     try {
-      const prompt = `Given this resume content, extract and organize it into clear sections. Return a JSON response with 'header' containing name and contact info, and 'sections' array with each section having a 'title' and 'content' array. Include work experience, education, skills, etc.:
+      const truncatedContent = truncateText(content);
+      const prompt = `Extract and organize this resume content into clear sections. Return a JSON with this exact format:
+{
+  "header": { "name": "full name", "contact": "contact info" },
+  "sections": [
+    {
+      "title": "section name",
+      "content": [{ "role": "job title", "company": "company name", "date": "duration", "description": "brief description" }]
+    }
+  ]
+}
 
-${content}`;
+Resume:
+${truncatedContent}`;
 
       const response = await hf.textGeneration({
         model: 'mistralai/Mistral-7B-Instruct-v0.3',
