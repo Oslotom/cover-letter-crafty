@@ -40,6 +40,18 @@ export const CoverLetterGenerator = ({
 
   const saveApplication = async (generatedCoverLetter: string) => {
     try {
+      // Get the current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to save applications",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { data, error } = await supabase
         .from('applications')
         .insert([
@@ -47,7 +59,8 @@ export const CoverLetterGenerator = ({
             job_description: jobContent,
             cv_content: cvContent,
             cover_letter: generatedCoverLetter,
-            job_url: window.location.href
+            job_url: window.location.href,
+            user_id: user.id // Add the user_id here
           }
         ])
         .select()
