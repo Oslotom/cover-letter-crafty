@@ -95,7 +95,7 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
           <input
             type="url"
             placeholder="Insert link to job description here"
-            className="w-full bg-background dark:bg-background/50 outline-none rounded-md px-4 py-2
+            className="w-full bg-transparent outline-none rounded-md px-4 py-2
               transition-all duration-300 border border-transparent hover:border-purple-500/50 focus:border-pink-500/50"
             value={status || url}
             onChange={handleUrlChange}

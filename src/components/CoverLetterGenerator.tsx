@@ -3,7 +3,7 @@ import { HfInference } from '@huggingface/inference';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Download, Edit2, Save, Check } from "lucide-react";
+import { Loader2, Download, Edit2, Save } from "lucide-react";
 
 interface CoverLetterGeneratorProps {
   cvContent: string;
@@ -12,6 +12,8 @@ interface CoverLetterGeneratorProps {
   onEdit?: () => void;
   onDownload?: () => void;
   autoGenerate?: boolean;
+  currentCoverLetter?: string;
+  onCoverLetterChange?: (text: string) => void;
 }
 
 export const CoverLetterGenerator = ({ 
@@ -20,11 +22,12 @@ export const CoverLetterGenerator = ({
   isEditing,
   onEdit,
   onDownload,
-  autoGenerate = false
+  autoGenerate = false,
+  currentCoverLetter,
+  onCoverLetterChange
 }: CoverLetterGeneratorProps) => {
-  const [coverLetter, setCoverLetter] = useState('');
+  const [coverLetter, setCoverLetter] = useState(currentCoverLetter || '');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
   const { toast } = useToast();
 
   const generateCoverLetter = async () => {
@@ -72,7 +75,9 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
         .trim();
 
       setCoverLetter(generatedText);
-      setIsSuccess(true);
+      if (onCoverLetterChange) {
+        onCoverLetterChange(generatedText);
+      }
 
       toast({
         title: "Success",
@@ -96,6 +101,12 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
       generateCoverLetter();
     }
   }, [autoGenerate, cvContent, jobContent]);
+
+  useEffect(() => {
+    if (currentCoverLetter && currentCoverLetter !== coverLetter) {
+      setCoverLetter(currentCoverLetter);
+    }
+  }, [currentCoverLetter]);
 
   return (
     <div className="space-y-4">
@@ -139,12 +150,19 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
               Download
             </Button>
           </div>
-          <Textarea
-            value={coverLetter}
-            onChange={(e) => setCoverLetter(e.target.value)}
-            className="min-h-[1000px] font-serif p-4 text-sm"
-            readOnly={!isEditing}
-          />
+          <div className="shadow-lg rounded-lg">
+            <Textarea
+              value={coverLetter}
+              onChange={(e) => {
+                setCoverLetter(e.target.value);
+                if (onCoverLetterChange) {
+                  onCoverLetterChange(e.target.value);
+                }
+              }}
+              className="min-h-0 h-auto font-serif p-6 text-base leading-relaxed rounded-lg"
+              readOnly={!isEditing}
+            />
+          </div>
         </div>
       )}
     </div>
