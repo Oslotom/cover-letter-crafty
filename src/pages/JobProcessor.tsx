@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CoverLetterGenerator } from '@/components/CoverLetterGenerator';
 import { useToast } from "@/hooks/use-toast";
-import { Header } from '@/components/Header';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { HfInference } from '@huggingface/inference';
-import { Wand2 } from "lucide-react";
+import { Wand2, Save } from "lucide-react";
+import { supabase } from '@/integrations/supabase/client';
 
 interface LocationState {
   jobContent: string;
@@ -58,6 +58,54 @@ const JobProcessor = () => {
     extractJobTitle();
   }, [jobContent, navigate, cvContent]);
 
+  const saveApplication = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to save applications",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('applications')
+        .insert([
+          {
+            job_description: jobContent,
+            cv_content: cvContent,
+            cover_letter: currentCoverLetter,
+            job_url: sourceUrl,
+            job_title: jobTitle,
+            user_id: user.id
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Application saved successfully",
+      });
+
+      if (data?.id) {
+        navigate(`/application/${data.id}`);
+      }
+    } catch (error) {
+      console.error('Error saving application:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save application",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleAIEdit = async () => {
     if (!aiPrompt.trim() || !currentCoverLetter) {
       toast({
@@ -107,9 +155,7 @@ Provide ONLY the edited cover letter text, without any additional text or format
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      
-      <div className="container max-w-4xl mx-auto space-y-8 px-6 md:px-4 py-20 pt-28">
+      <div className="container max-w-4xl mx-auto space-y-8 px-6 md:px-4 py-20">
         <div className="text-center space-y-6">
           <p className="text-lg text-muted-foreground">Your Cover Letter</p>
           <h1 className="text-4xl font-bold">
@@ -127,7 +173,7 @@ Provide ONLY the edited cover letter text, without any additional text or format
         </div>
 
         <div className="space-y-4">
-          <div className="flex justify-end max-w-2xl mx-auto ">
+          <div className="flex justify-end max-w-2xl mx-auto gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -136,6 +182,15 @@ Provide ONLY the edited cover letter text, without any additional text or format
             >
               <Wand2 className="w-4 h-4" />
               Edit with AI
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={saveApplication}
+              className="gap-2"
+            >
+              <Save className="w-4 h-4" />
+              Save Application
             </Button>
           </div>
 

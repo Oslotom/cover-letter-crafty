@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Download, Edit2, Save } from "lucide-react";
-import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
 
 interface CoverLetterGeneratorProps {
   cvContent: string;
@@ -31,59 +29,10 @@ export const CoverLetterGenerator = ({
   const [coverLetter, setCoverLetter] = useState(currentCoverLetter || '');
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const truncateText = (text: string, maxLength: number = 10000): string => {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
-  };
-
-  const saveApplication = async (generatedCoverLetter: string) => {
-    try {
-      // Get the current user
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to save applications",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('applications')
-        .insert([
-          {
-            job_description: jobContent,
-            cv_content: cvContent,
-            cover_letter: generatedCoverLetter,
-            job_url: window.location.href,
-            user_id: user.id // Add the user_id here
-          }
-        ])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Application saved successfully",
-      });
-
-      if (data?.id) {
-        navigate(`/application/${data.id}`);
-      }
-    } catch (error) {
-      console.error('Error saving application:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save application",
-        variant: "destructive",
-      });
-    }
   };
 
   const generateCoverLetter = async () => {
@@ -136,11 +85,6 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
       setCoverLetter(generatedText);
       if (onCoverLetterChange) {
         onCoverLetterChange(generatedText);
-      }
-
-      // Save the application if we're not in edit mode
-      if (!currentCoverLetter) {
-        await saveApplication(generatedText);
       }
 
       toast({
