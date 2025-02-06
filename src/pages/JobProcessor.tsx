@@ -201,7 +201,7 @@ Provide ONLY the edited cover letter text, without any additional text or format
                   onClick={handleAIEdit}
                   className="bg-gradient-to-r from-purple-500 to-pink-600 hover:opacity-90"
                 >
-                  Update Cover Letter
+                  Update Cover Letter!
                 </Button>
               </div>
             </div>
