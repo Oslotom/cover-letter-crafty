@@ -20,6 +20,12 @@ export function JobApplicationsTable() {
   const navigate = useNavigate();
 
   const fetchApplications = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      navigate('/auth');
+      return;
+    }
+
     const { data, error } = await supabase
       .from('applications')
       .select('*')
@@ -38,6 +44,12 @@ export function JobApplicationsTable() {
   };
 
   const handleAddApplication = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      navigate('/auth');
+      return;
+    }
+
     setIsLoading(true);
     try {
       // Simulated AI response for now
@@ -55,6 +67,7 @@ export function JobApplicationsTable() {
           deadline: jobData.deadline,
           job_url: url,
           status: "Wishlist" as ApplicationStatus,
+          user_id: session.user.id,
         });
 
       if (error) throw error;
