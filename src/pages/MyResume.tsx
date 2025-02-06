@@ -30,18 +30,39 @@ export default function MyResume() {
   const processResumeWithAI = async (content: string) => {
     try {
       const truncatedContent = truncateText(content);
-      const prompt = `Extract and organize this resume content into clear sections. Return a JSON with this exact format:
+      const prompt = `I am uploading a resume in text format. Your task is to analyze the content and return a structured response with standard resume sections.
+
+Instructions:
+Extract and organize the content into the following sections:
+
+Professional Summary: A short description of the candidate's experience, skills, and strengths.
+Work Experience: A list of previous jobs, including company name, job title, time period, and main responsibilities.
+Education: Schools/universities, fields of study, and degrees.
+Certifications: Any relevant certifications.
+Additional Roles (if applicable): Past roles that are relevant but don't fit under work experience.
+
+Format the response in a strict JSON format like this:
 {
-  "header": { "name": "full name", "contact": "contact info" },
+  "header": {
+    "name": "candidate full name",
+    "contact": "contact information"
+  },
   "sections": [
     {
-      "title": "section name",
-      "content": [{ "role": "job title", "company": "company name", "date": "duration", "description": "brief description" }]
+      "title": "section name (e.g., Professional Summary, Work Experience, etc.)",
+      "content": [
+        {
+          "role": "job title or degree",
+          "company": "company or institution name",
+          "date": "time period",
+          "description": "detailed description or responsibilities"
+        }
+      ]
     }
   ]
 }
 
-Resume:
+Resume content to analyze:
 ${truncatedContent}`;
 
       const response = await hf.textGeneration({
