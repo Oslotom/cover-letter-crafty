@@ -13,6 +13,7 @@ import Roadmap from '@/pages/Roadmap';
 import JobProcessor from '@/pages/JobProcessor';
 import NotFound from '@/pages/NotFound';
 import Prompt from '@/pages/Prompt';
+import CoverLetter from '@/pages/CoverLetter';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
             <Route path="/roadmap" element={<Roadmap />} />
             <Route path="/job-processor" element={<JobProcessor />} />
             <Route path="/prompt" element={<Prompt />} />
+            <Route path="/cover-letter/:id" element={<CoverLetter />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>

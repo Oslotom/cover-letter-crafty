@@ -56,17 +56,8 @@ export default function Dashboard() {
     fetchApplications();
   };
 
-  const handleEditCoverLetter = (application: Tables<'applications'>) => {
-    navigate('/job-processor', {
-      state: {
-        jobContent: application.job_description,
-        cvContent: application.cv_content,
-        sourceUrl: application.job_url,
-        applicationId: application.id,
-        currentCoverLetter: application.cover_letter,
-        shouldGenerateOnMount: false
-      }
-    });
+  const handleEditCoverLetter = (applicationId: string) => {
+    navigate(`/cover-letter/${applicationId}`);
   };
 
   useEffect(() => {
@@ -114,7 +105,7 @@ export default function Dashboard() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleEditCoverLetter(app)}
+                      onClick={() => handleEditCoverLetter(app.id)}
                       className="gap-2"
                     >
                       <Edit2 className="h-4 w-4" />
