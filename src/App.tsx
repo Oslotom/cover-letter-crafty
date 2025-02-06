@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Header } from "@/components/Header";
 import Index from "@/pages/Index";
 import Contact from "@/pages/Contact";
+import Auth from "@/pages/Auth";
 import { Toaster } from "@/components/ui/toaster";
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/auth" element={<Auth />} />
         </Routes>
         <Toaster />
       </Router>
