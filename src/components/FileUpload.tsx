@@ -5,10 +5,8 @@ import * as pdfjs from 'pdfjs-dist';
 import { Upload, Check } from "lucide-react";
 
 // Initialize PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.js',
-  import.meta.url,
-).toString();
+const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.entry');
+pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 interface FileUploadProps {
   onFileContent: (content: string) => void;
@@ -22,20 +20,25 @@ export const FileUpload = ({ onFileContent, contentType, showSuccessInButton }: 
   const { toast } = useToast();
 
   const extractTextFromPdf = async (file: File): Promise<string> => {
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
-    let fullText = '';
-    
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const textContent = await page.getTextContent();
-      const pageText = textContent.items
-        .map((item: any) => item.str)
-        .join(' ');
-      fullText += pageText + '\n';
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+      let fullText = '';
+      
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items
+          .map((item: any) => item.str)
+          .join(' ');
+        fullText += pageText + '\n';
+      }
+      
+      return fullText;
+    } catch (error) {
+      console.error('Error extracting text from PDF:', error);
+      throw new Error('Failed to extract text from PDF');
     }
-    
-    return fullText;
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,6 +87,10 @@ export const FileUpload = ({ onFileContent, contentType, showSuccessInButton }: 
 
       onFileContent(content);
       setIsSuccess(true);
+      toast({
+        title: "Success",
+        description: "File uploaded and processed successfully",
+      });
     } catch (error) {
       console.error('Error processing file:', error);
       toast({
