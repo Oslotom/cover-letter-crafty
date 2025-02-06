@@ -4,9 +4,8 @@ import { useToast } from '@/hooks/use-toast';
 import * as pdfjs from 'pdfjs-dist';
 import { Upload, Check, Loader2 } from "lucide-react";
 
-// Import worker directly
-import PDFWorker from 'pdfjs-dist/build/pdf.worker.min.js?url';
-pdfjs.GlobalWorkerOptions.workerSrc = PDFWorker;
+// Set worker source path
+pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 interface FileUploadProps {
   onFileContent: (content: string) => void;
