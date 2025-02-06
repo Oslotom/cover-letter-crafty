@@ -35,9 +35,7 @@ const JobProcessor = () => {
     const extractJobTitle = async () => {
       try {
         const hf = new HfInference("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");
-        const prompt = `the content is a job description. i want the name of the role or title. Identify and return ONLY the role name, job position or job title from the job description below. 
-    The job title is a short phrase (2-5 words) typically found at the start, often bolded or in a larger font. 
-    Ignore company names, locations, and extra details. Respond with ONLY the role name or the job title and nothing else. here is the job description: ${jobContent.substring(0, 800)}`;
+        const prompt = `Identify and return ONLY the job title text. The job title is the name of the role that the text describes. Respond with ONLY the job title name. dont include intro text or any other text that is not the job title name. What is the name of the role?: ${jobContent.substring(0, 500)}`;
         
         const response = await hf.textGeneration({
           model: 'mistralai/Mistral-7B-Instruct-v0.2',
