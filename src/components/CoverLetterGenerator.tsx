@@ -30,6 +30,11 @@ export const CoverLetterGenerator = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
 
+  const truncateText = (text: string, maxLength: number = 10000): string => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  };
+
   const generateCoverLetter = async () => {
     if (!cvContent || !jobContent) {
       toast({
@@ -44,13 +49,16 @@ export const CoverLetterGenerator = ({
     try {
       const hf = new HfInference("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");
       
-      const finalPrompt = `Generate a professional cover letter based on the CV and job description below. The cover letter should highlight relevant experience and skills from the CV that match the job requirements. Keep it concise and professional, under 300 words.
+      const truncatedCV = truncateText(cvContent);
+      const truncatedJob = truncateText(jobContent);
+      
+      const finalPrompt = `Generate a professional cover letter based on the CV and job description below. The cover letter should highlight relevant experience and skills from the CV that match the job requirements. Keep it very short. Keep it concise and professional, under 150 words.
 
 Resume Content:
-${cvContent}
+${truncatedCV}
 
 Job Description:
-${jobContent}
+${truncatedJob}
 
 Generate ONLY the cover letter body text, without any salutations, signatures, or formatting. Focus on making compelling connections between the candidate's experience and the job requirements.`;
 
@@ -58,8 +66,8 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
         model: 'mistralai/Mistral-7B-Instruct-v0.2',
         inputs: finalPrompt,
         parameters: {
-          max_new_tokens: 500,
-          temperature: 0.7,
+          max_new_tokens: 300,
+          temperature: 0.01,
           top_p: 0.9,
           repetition_penalty: 1.2,
           return_full_text: false
@@ -120,7 +128,7 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
           )}
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4 max-w-2xl mx-auto">
           <div className="flex justify-end space-x-2">
             <Button
               variant="outline"
@@ -150,7 +158,7 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
               Download
             </Button>
           </div>
-          <div className="shadow-lg rounded-lg">
+          <div className="flex items-center justify-center max-w-2xl mx-auto shadow-5xl rounded-lg min-h-[600px] h-auto">
             <Textarea
               value={coverLetter}
               onChange={(e) => {
@@ -159,7 +167,7 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
                   onCoverLetterChange(e.target.value);
                 }
               }}
-              className="min-h-0 h-auto font-serif p-6 text-base leading-relaxed rounded-lg"
+              className="min-h-[900px] font-serif p-6 text-base leading-relaxed rounded-lg"
               readOnly={!isEditing}
             />
           </div>
