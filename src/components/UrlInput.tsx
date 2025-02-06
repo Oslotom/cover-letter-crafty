@@ -91,12 +91,12 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
   return (
     <div className="w-full p-4 rounded-lg bg-white/10 dark:bg-white/10">
       <div className="flex items-center gap-4">
-        <div className={`flex-1 relative ${url ? 'border-gradient' : ''}`}>
+        <div className={`flex-1 relative ${url ? 'border-transparent' : ''}`}>
           <input
             type="url"
             placeholder="Insert link to job description here"
             className="w-full bg-transparent outline-none rounded-md px-4 py-2
-              transition-all duration-300 border border-transparent hover:border-purple-500/50 focus:border-pink-500/50"
+              transition-all duration-300  border-transparent  "
             value={status || url}
             onChange={handleUrlChange}
             readOnly={isLoading || stage !== 'url'}
