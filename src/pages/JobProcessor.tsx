@@ -13,6 +13,7 @@ interface LocationState {
   sourceUrl?: string;
   cvContent?: string;
   shouldGenerateOnMount?: boolean;
+  applicationId?: string;
 }
 
 const JobProcessor = () => {
@@ -23,7 +24,7 @@ const JobProcessor = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingWithAI, setIsEditingWithAI] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
-  const { jobContent, sourceUrl, cvContent, shouldGenerateOnMount } = (location.state as LocationState) || {};
+  const { jobContent, sourceUrl, cvContent, shouldGenerateOnMount, applicationId } = (location.state as LocationState) || {};
   const [currentCoverLetter, setCurrentCoverLetter] = useState('');
 
   useEffect(() => {
@@ -71,30 +72,55 @@ const JobProcessor = () => {
         return;
       }
 
-      const { data, error } = await supabase
-        .from('applications')
-        .insert([
-          {
+      if (applicationId) {
+        // Update existing application
+        const { error } = await supabase
+          .from('applications')
+          .update({
             job_description: jobContent,
             cv_content: cvContent,
             cover_letter: currentCoverLetter,
             job_url: sourceUrl,
             job_title: jobTitle,
-            user_id: user.id
-          }
-        ])
-        .select()
-        .single();
+          })
+          .eq('id', applicationId);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Application saved successfully",
-      });
+        toast({
+          title: "Success",
+          description: "Application updated successfully",
+        });
 
-      if (data?.id) {
-        navigate(`/application/${data.id}`);
+        navigate('/dashboard');
+      } else {
+        // Create new application
+        const { data, error } = await supabase
+          .from('applications')
+          .insert([
+            {
+              job_description: jobContent,
+              cv_content: cvContent,
+              cover_letter: currentCoverLetter,
+              job_url: sourceUrl,
+              job_title: jobTitle,
+              user_id: user.id,
+              status: 'Wishlist'
+            }
+          ])
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Application saved successfully",
+        });
+
+        if (data?.id) {
+          navigate(`/dashboard`);
+        }
       }
     } catch (error) {
       console.error('Error saving application:', error);
@@ -172,7 +198,7 @@ Provide ONLY the edited cover letter text, without any additional text or format
           )}
         </div>
 
-        <div className="space-y-4 ">
+        <div className="space-y-4">
           <div className="flex justify-end max-w-2xl mx-auto gap-2">
             <Button
               variant="outline"
@@ -183,7 +209,15 @@ Provide ONLY the edited cover letter text, without any additional text or format
               <Wand2 className="w-4 h-4" />
               Edit with AI
             </Button>
-          
+            <Button
+              variant="default"
+              size="sm"
+              onClick={saveApplication}
+              className="gap-2"
+            >
+              <Save className="w-4 h-4" />
+              {applicationId ? 'Update' : 'Save'}
+            </Button>
           </div>
 
           {isEditingWithAI && (
@@ -195,7 +229,6 @@ Provide ONLY the edited cover letter text, without any additional text or format
                 className="min-h-[100px]"
               />
               <div className="flex justify-end gap-2">
-               
                 <Button
                   size="sm"
                   onClick={handleAIEdit}
