@@ -20,17 +20,12 @@ export default defineConfig(({ mode }) => ({
     },
   },
   optimizeDeps: {
-    include: ['pdfjs-dist', 'react', 'react-dom', 'react-router-dom']
+    include: ['pdfjs-dist']
   },
   build: {
     commonjsOptions: {
       include: [/pdfjs-dist/, /node_modules/],
       transformMixedEsModules: true
-    },
-    rollupOptions: {
-      external: [
-        'pdfjs-dist/build/pdf.worker.entry'
-      ]
     }
   }
 }));
