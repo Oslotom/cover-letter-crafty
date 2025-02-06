@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import * as pdfjs from 'pdfjs-dist';
-import { Button } from "@/components/ui/button";
 import { Upload, Check, Loader2 } from "lucide-react";
 
-// Set worker source path
-pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+// Import worker directly
+import PDFWorker from 'pdfjs-dist/build/pdf.worker.min.js?url';
+pdfjs.GlobalWorkerOptions.workerSrc = PDFWorker;
 
 interface FileUploadProps {
   onFileContent: (content: string) => void;

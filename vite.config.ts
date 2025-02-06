@@ -19,11 +19,7 @@ export default defineConfig(({ mode }) => ({
       "react": path.resolve(__dirname, "./node_modules/react"),
     },
   },
-  build: {
-    rollupOptions: {
-      external: [
-        'pdfjs-dist/build/pdf.worker.entry'
-      ]
-    }
+  optimizeDeps: {
+    include: ['pdfjs-dist']
   }
 }));
