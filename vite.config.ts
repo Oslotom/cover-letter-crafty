@@ -19,6 +19,9 @@ export default defineConfig(({ mode }) => ({
       "react": path.resolve(__dirname, "./node_modules/react"),
     },
   },
+  optimizeDeps: {
+    include: ['pdfjs-dist']
+  },
   build: {
     rollupOptions: {
       output: {
