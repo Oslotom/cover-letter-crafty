@@ -5,7 +5,10 @@ import * as pdfjs from 'pdfjs-dist';
 import { Upload, Check } from "lucide-react";
 
 // Initialize PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.js',
+  import.meta.url,
+).toString();
 
 interface FileUploadProps {
   onFileContent: (content: string) => void;
