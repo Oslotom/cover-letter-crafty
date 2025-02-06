@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ModeToggle } from "@/components/ModeToggle";
+import { ModeToggle } from "./ModeToggle";
 
 export function Header() {
   return (
