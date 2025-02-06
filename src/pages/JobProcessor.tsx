@@ -24,8 +24,15 @@ const JobProcessor = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingWithAI, setIsEditingWithAI] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
-  const { jobContent, sourceUrl, cvContent, shouldGenerateOnMount, applicationId } = (location.state as LocationState) || {};
-  const [currentCoverLetter, setCurrentCoverLetter] = useState('');
+  const { 
+    jobContent, 
+    sourceUrl, 
+    cvContent, 
+    shouldGenerateOnMount, 
+    applicationId,
+    currentCoverLetter: initialCoverLetter 
+  } = (location.state as LocationState) || {};
+  const [currentCoverLetter, setCurrentCoverLetter] = useState(initialCoverLetter || '');
 
   useEffect(() => {
     if (!jobContent || !cvContent) {
@@ -73,7 +80,6 @@ const JobProcessor = () => {
       }
 
       if (applicationId) {
-        // Update existing application
         const { error } = await supabase
           .from('applications')
           .update({
@@ -94,7 +100,6 @@ const JobProcessor = () => {
 
         navigate('/dashboard');
       } else {
-        // Create new application
         const { data, error } = await supabase
           .from('applications')
           .insert([
@@ -119,7 +124,7 @@ const JobProcessor = () => {
         });
 
         if (data?.id) {
-          navigate(`/dashboard`);
+          navigate('/dashboard');
         }
       }
     } catch (error) {
@@ -181,7 +186,7 @@ Provide ONLY the edited cover letter text, without any additional text or format
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container max-w-4xl mx-auto space-y-8 px-6 md:px-4 py-15">
+      <div className="container max-w-2xl mx-auto space-y-8 px-6 md:px-4 py-15">
         <div className="text-center space-y-6">
           <p className="text-lg text-muted-foreground">Your Cover Letter</p>
           <h1 className="text-4xl font-bold">
