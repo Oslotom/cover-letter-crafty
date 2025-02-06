@@ -1,52 +1,49 @@
 import { Link } from "react-router-dom";
-import { ModeToggle } from "./ModeToggle";
+import { ModeToggle } from "@/components/ModeToggle";
 
-export function Header() {
+export const Header = () => {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <nav className="container flex h-14 items-center">
-        <div className="flex items-center space-x-4 lg:space-x-6">
-          <Link
-            to="/"
-            className="text-sm font-medium transition-colors hover:text-primary"
-          >
-            Home
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 items-center">
+        <div className="mr-4 hidden md:flex">
+          <Link to="/" className="mr-6 flex items-center space-x-2">
+            <span className="hidden font-bold sm:inline-block">
+              Cover Letter Generator
+            </span>
           </Link>
-          <Link
-            to="/my-resume"
-            className="text-sm font-medium transition-colors hover:text-primary"
-          >
-            My Resume
-          </Link>
-          <Link
-            to="/chat"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-          >
-            Chat
-          </Link>
-          <Link
-            to="/prompt"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-          >
-            Prompt
-          </Link>
-          <Link
-            to="/contact"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-          >
-            Contact
-          </Link>
-          <Link
-            to="/roadmap"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-          >
-            Roadmap
-          </Link>
+          <nav className="flex items-center space-x-6 text-sm font-medium">
+            <Link
+              to="/applications"
+              className="transition-colors hover:text-foreground/80 text-foreground/60"
+            >
+              Applications
+            </Link>
+            <Link
+              to="/my-resume"
+              className="transition-colors hover:text-foreground/80 text-foreground/60"
+            >
+              My Resume
+            </Link>
+            <Link
+              to="/chat"
+              className="transition-colors hover:text-foreground/80 text-foreground/60"
+            >
+              Chat
+            </Link>
+            <Link
+              to="/contact"
+              className="transition-colors hover:text-foreground/80 text-foreground/60"
+            >
+              Contact
+            </Link>
+          </nav>
         </div>
-        <div className="ml-auto">
+        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+          <div className="w-full flex-1 md:w-auto md:flex-none">
+          </div>
           <ModeToggle />
         </div>
-      </nav>
+      </div>
     </header>
   );
-}
+};
