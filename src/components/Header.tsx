@@ -1,39 +1,52 @@
-import { Link } from 'react-router-dom';
-import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
-import { Sun, Moon } from 'lucide-react';
+import { Link } from "react-router-dom";
+import { ModeToggle } from "@/components/ModeToggle";
 
-export const Header = () => {
-  const { theme, setTheme } = useTheme();
-
+export function Header() {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-transparent">
-      <div className="container max-w-6xl mx-auto flex items-center justify-between h-16 px-4 md:px-6">
-        <Link to="/" className="text-2xl font-bold text-foreground">
-          CoverAI
-        </Link>
-        
-        <nav className="flex items-center space-x-4">
-          <Link to="/" className="text-foreground/80 hover:text-foreground transition-colors">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <nav className="container flex h-14 items-center">
+        <div className="flex items-center space-x-4 lg:space-x-6">
+          <Link
+            to="/"
+            className="text-sm font-medium transition-colors hover:text-primary"
+          >
             Home
           </Link>
-          <Link to="/contact" className="text-foreground/80 hover:text-foreground transition-colors">
+          <Link
+            to="/my-resume"
+            className="text-sm font-medium transition-colors hover:text-primary"
+          >
+            My Resume
+          </Link>
+          <Link
+            to="/chat"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+          >
+            Chat
+          </Link>
+          <Link
+            to="/prompt"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+          >
+            Prompt
+          </Link>
+          <Link
+            to="/contact"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+          >
             Contact
           </Link>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-            className="ml-4"
+          <Link
+            to="/roadmap"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
           >
-            {theme === 'light' ? (
-              <Moon className="h-5 w-5" />
-            ) : (
-              <Sun className="h-5 w-5" />
-            )}
-          </Button>
-        </nav>
-      </div>
+            Roadmap
+          </Link>
+        </div>
+        <div className="ml-auto">
+          <ModeToggle />
+        </div>
+      </nav>
     </header>
   );
-};
+}
