@@ -14,6 +14,7 @@ interface LocationState {
   cvContent?: string;
   shouldGenerateOnMount?: boolean;
   applicationId?: string;
+  currentCoverLetter?: string;
 }
 
 const JobProcessor = () => {
