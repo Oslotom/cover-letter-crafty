@@ -172,7 +172,7 @@ Provide ONLY the edited cover letter text, without any additional text or format
           )}
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 ">
           <div className="flex justify-end max-w-2xl mx-auto gap-2">
             <Button
               variant="outline"
@@ -183,19 +183,11 @@ Provide ONLY the edited cover letter text, without any additional text or format
               <Wand2 className="w-4 h-4" />
               Edit with AI
             </Button>
-            <Button
-              variant="default"
-              size="sm"
-              onClick={saveApplication}
-              className="gap-2"
-            >
-              <Save className="w-4 h-4" />
-              Save Application
-            </Button>
+          
           </div>
 
           {isEditingWithAI && (
-            <div className="space-y-4 mb-4">
+            <div className="space-y-4 mb-4 max-w-2xl mx-auto">
               <Textarea
                 placeholder="Describe how you want to edit the cover letter..."
                 value={aiPrompt}
@@ -203,13 +195,7 @@ Provide ONLY the edited cover letter text, without any additional text or format
                 className="min-h-[100px]"
               />
               <div className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsEditingWithAI(false)}
-                >
-                  Cancel
-                </Button>
+               
                 <Button
                   size="sm"
                   onClick={handleAIEdit}

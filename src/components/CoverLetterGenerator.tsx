@@ -52,7 +52,7 @@ export const CoverLetterGenerator = ({
       const truncatedCV = truncateText(cvContent);
       const truncatedJob = truncateText(jobContent);
       
-      const finalPrompt = `Generate a professional cover letter based on the CV and job description below. The cover letter should highlight relevant experience and skills from the CV that match the job requirements. Keep it very short. Keep it concise and professional, under 150 words.
+      const finalPrompt = `Generate a professional cover letter based on the CV and job description below. The cover letter should highlight relevant experience and skills from the CV that match the job requirements. Keep it very short. Keep it concise and professional, under 250 words.
 
 Resume Content:
 ${truncatedCV}
