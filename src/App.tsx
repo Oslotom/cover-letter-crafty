@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import Index from "@/pages/Index";
 import Contact from "@/pages/Contact";
 import Auth from "@/pages/Auth";
+import Dashboard from "@/pages/Dashboard";
 import { Toaster } from "@/components/ui/toaster";
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
           <Route path="/" element={<Index />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
         <Toaster />
       </Router>
