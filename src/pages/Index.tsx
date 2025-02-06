@@ -34,7 +34,7 @@ const Index = () => {
           </h1>       
           
           <p className="text-foreground dark:text-white p-6 text-xl">
-            Add the the job description link and upload your resume. No fuss, totally free. No login. 
+            Add the the job description link and upload your resume.. No fuss, totally free. No login. 
           </p>
         </div>
         
