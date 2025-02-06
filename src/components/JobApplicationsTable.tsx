@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tables } from '@/integrations/supabase/types';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
@@ -8,6 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
+
+type ApplicationStatus = "Wishlist" | "Applied" | "Interview" | "Offer" | "Rejected";
 
 export function JobApplicationsTable() {
   const [applications, setApplications] = useState<Tables<'applications'>[]>([]);
@@ -52,7 +54,7 @@ export function JobApplicationsTable() {
           company: jobData.company,
           deadline: jobData.deadline,
           job_url: url,
-          status: 'Wishlist',
+          status: "Wishlist" as ApplicationStatus,
         });
 
       if (error) throw error;
@@ -76,7 +78,7 @@ export function JobApplicationsTable() {
     }
   };
 
-  const handleStatusChange = async (id: string, newStatus: string) => {
+  const handleStatusChange = async (id: string, newStatus: ApplicationStatus) => {
     const { error } = await supabase
       .from('applications')
       .update({ status: newStatus })
@@ -94,7 +96,7 @@ export function JobApplicationsTable() {
     fetchApplications();
   };
 
-  useState(() => {
+  useEffect(() => {
     fetchApplications();
   }, []);
 
@@ -147,7 +149,7 @@ export function JobApplicationsTable() {
                   value={app.status || 'Wishlist'}
                   onChange={(e) => {
                     e.stopPropagation();
-                    handleStatusChange(app.id, e.target.value);
+                    handleStatusChange(app.id, e.target.value as ApplicationStatus);
                   }}
                   onClick={(e) => e.stopPropagation()}
                   className="bg-transparent border rounded px-2 py-1"
