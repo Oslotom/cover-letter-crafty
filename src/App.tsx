@@ -9,6 +9,7 @@ import Roadmap from './pages/Roadmap';
 import NotFound from './pages/NotFound';
 import JobProcessor from './pages/JobProcessor';
 import JobDetails from './pages/JobDetails';
+import MyResume from './pages/MyResume';
 import { Toaster } from "@/components/ui/toaster";
 
 function App() {
@@ -17,7 +18,7 @@ function App() {
       <Router>
         <div className="min-h-screen bg-background">
           <Header />
-          <main className="pt-16"> {/* Add padding-top to account for fixed header */}
+          <main className="pt-16">
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/chat" element={<Chat />} />
@@ -26,6 +27,7 @@ function App() {
               <Route path="/job-details" element={<JobDetails />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/roadmap" element={<Roadmap />} />
+              <Route path="/my-resume" element={<MyResume />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
