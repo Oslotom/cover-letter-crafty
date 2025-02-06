@@ -11,7 +11,6 @@ import JobProcessor from "@/pages/JobProcessor";
 import Prompt from "@/pages/Prompt";
 import Roadmap from "@/pages/Roadmap";
 import NotFound from "@/pages/NotFound";
-import MyResume from "@/pages/MyResume";
 
 function App() {
   return (
@@ -28,7 +27,6 @@ function App() {
           <Route path="/job-processor" element={<JobProcessor />} />
           <Route path="/prompt" element={<Prompt />} />
           <Route path="/roadmap" element={<Roadmap />} />
-          <Route path="/my-resume" element={<MyResume />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />
