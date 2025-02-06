@@ -155,7 +155,7 @@ Provide ONLY the edited cover letter text, without any additional text or format
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container max-w-4xl mx-auto space-y-8 px-6 md:px-4 py-20">
+      <div className="container max-w-4xl mx-auto space-y-8 px-6 md:px-4 py-15">
         <div className="text-center space-y-6">
           <p className="text-lg text-muted-foreground">Your Cover Letter</p>
           <h1 className="text-4xl font-bold">

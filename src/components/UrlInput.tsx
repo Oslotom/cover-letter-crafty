@@ -57,7 +57,7 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
       setJobDescription(cleanText);
       onUrlContent(cleanText);
       
-      setStatus('Click to upload your resume');
+      setStatus('Upload resume');
       setStage('resume');
     } catch (error) {
       console.error('Error fetching URL:', error);
@@ -94,7 +94,7 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
         <div className={`flex-1 relative ${url ? 'border-gradient' : ''}`}>
           <input
             type="url"
-            placeholder="Insert link to job description here"
+            placeholder="Add link to job description here"
             className="w-full bg-transparent outline-none rounded-md px-4 py-2
               transition-all duration-300 border border-transparent hover:border-purple-500/50 focus:border-pink-500/50"
             value={status || url}

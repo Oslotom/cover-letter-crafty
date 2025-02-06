@@ -52,7 +52,7 @@ export const CoverLetterGenerator = ({
       const truncatedCV = truncateText(cvContent);
       const truncatedJob = truncateText(jobContent);
       
-      const finalPrompt = `Generate a professional cover letter based on the CV and job description below. The cover letter should highlight relevant experience and skills from the CV that match the job requirements. Keep it very short. Keep it concise and professional, under 250 words.
+      const finalPrompt = `Generate a professional cover letter based on the CV and job description below. The cover letter should highlight relevant experience and skills from the CV that match the job requirements. Keep it very short. Keep it concise and professional, max 280 words.
 
 Resume Content:
 ${truncatedCV}
@@ -63,11 +63,11 @@ ${truncatedJob}
 Generate ONLY the cover letter body text, without any salutations, signatures, or formatting. Focus on making compelling connections between the candidate's experience and the job requirements.`;
 
       const response = await hf.textGeneration({
-        model: 'mistralai/Mistral-7B-Instruct-v0.2',
+        model: 'mistralai/Mistral-7B-Instruct-v0.3',
         inputs: finalPrompt,
         parameters: {
-          max_new_tokens: 300,
-          temperature: 0.01,
+          max_new_tokens: 350,
+          temperature: 0.001,
           top_p: 0.9,
           repetition_penalty: 1.2,
           return_full_text: false
@@ -158,7 +158,7 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
               Download
             </Button>
           </div>
-          <div className="flex items-center justify-center max-w-2xl mx-auto shadow-5xl rounded-lg min-h-[600px] h-auto">
+          <div className="flex items-center justify-center max-w-2xl mx-auto rounded-lg min-h-[600px] h-auto">
             <Textarea
               value={coverLetter}
               onChange={(e) => {
@@ -167,7 +167,7 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
                   onCoverLetterChange(e.target.value);
                 }
               }}
-              className="min-h-[900px] font-serif p-6 text-base leading-relaxed rounded-lg"
+              className="min-h-[900px] shadow-xl font-serif p-6 text-base leading-relaxed rounded-5 resize-none"
               readOnly={!isEditing}
             />
           </div>
