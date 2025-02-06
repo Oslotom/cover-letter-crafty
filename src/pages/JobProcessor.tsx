@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Button } from "@/components/ui/button";
 import { CoverLetterGenerator } from '@/components/CoverLetterGenerator';
 import { useToast } from "@/hooks/use-toast";
 import { Header } from '@/components/Header';
@@ -10,56 +9,48 @@ interface LocationState {
   jobContent: string;
   sourceUrl?: string;
   cvContent?: string;
+  shouldGenerateOnMount?: boolean;
 }
 
 const JobProcessor = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isProcessing, setIsProcessing] = useState(false);
   const [jobTitle, setJobTitle] = useState<string>('');
   const [isEditing, setIsEditing] = useState(false);
-  const { jobContent, sourceUrl, cvContent } = (location.state as LocationState) || { jobContent: '' };
+  const { jobContent, sourceUrl, cvContent, shouldGenerateOnMount } = (location.state as LocationState) || {};
 
   useEffect(() => {
-    if (!jobContent) {
+    if (!jobContent || !cvContent) {
       navigate('/');
       return;
     }
+
     const extractJobTitle = async () => {
       try {
-        const response = await fetch('https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2', {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
-            'Authorization': 'Bearer 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',
+            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            inputs: `Extract ONLY the job title or role name from this job posting. Look specifically in the header or at the very beginning of the text for the main job title. Return ONLY the exact job title or role name, nothing else. Example job titles: "Senior Software Engineer", "Product Manager", "Marketing Director".
-
-Text:
-${jobContent.substring(0, 1000)}
-
-Return ONLY the job title, no other text:`,
-            parameters: {
-              max_new_tokens: 20,
-              temperature: 0.1,
-              top_p: 0.1,
-              return_full_text: false
-            }
+            model: 'gpt-4o-mini',
+            messages: [
+              {
+                role: 'system',
+                content: 'Extract ONLY the job title from this job posting. Return ONLY the exact job title, no other text.'
+              },
+              {
+                role: 'user',
+                content: jobContent.substring(0, 1000)
+              }
+            ],
           }),
         });
 
         const data = await response.json();
-        let extractedTitle = data[0]?.generated_text?.trim() || 'Job Position';
-        
-        extractedTitle = extractedTitle
-          .replace(/^(job title:|title:|position:|role:|here's|this is|the|a|an|for)/i, '')
-          .replace(/["']/g, '')
-          .replace(/[:.,!?]/g, '')
-          .replace(/^\W+|\W+$/g, '')
-          .trim();
-
+        const extractedTitle = data.choices[0].message.content.trim();
         setJobTitle(extractedTitle || 'Job Position');
       } catch (error) {
         console.error('Error extracting job title:', error);
@@ -68,10 +59,9 @@ Return ONLY the job title, no other text:`,
     };
 
     extractJobTitle();
-  }, [jobContent, navigate]);
+  }, [jobContent, navigate, cvContent]);
 
-  if (!cvContent) {
-    navigate('/');
+  if (!cvContent || !jobContent) {
     return null;
   }
 
@@ -99,19 +89,20 @@ Return ONLY the job title, no other text:`,
 
         <div className="space-y-4">
           <CoverLetterGenerator
-            cvContent={cvContent || ''}
+            cvContent={cvContent}
             jobContent={jobContent}
             isEditing={isEditing}
             onEdit={() => setIsEditing(!isEditing)}
             onDownload={() => {
               const element = document.createElement("a");
-              const file = new Blob([cvContent || ''], {type: 'text/plain'});
+              const file = new Blob([cvContent], {type: 'text/plain'});
               element.href = URL.createObjectURL(file);
               element.download = "cover-letter.txt";
               document.body.appendChild(element);
               element.click();
               document.body.removeChild(element);
             }}
+            autoGenerate={shouldGenerateOnMount}
           />
         </div>
       </div>

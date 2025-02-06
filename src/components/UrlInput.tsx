@@ -15,6 +15,7 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
   const [status, setStatus] = useState('');
   const [stage, setStage] = useState<'url' | 'resume' | 'view'>('url');
   const [cvContent, setCvContent] = useState('');
+  const [jobDescription, setJobDescription] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -53,6 +54,7 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
       const textContent = doc.body.textContent || '';
       const cleanText = textContent.replace(/\s+/g, ' ').trim();
       
+      setJobDescription(cleanText);
       onUrlContent(cleanText);
       
       setStatus('Click to upload your resume');
@@ -78,9 +80,10 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
   const handleView = () => {
     navigate('/job-processor', { 
       state: { 
-        jobContent: url,
+        jobContent: jobDescription,
         sourceUrl: url,
-        cvContent
+        cvContent,
+        shouldGenerateOnMount: true
       }
     });
   };
@@ -93,7 +96,7 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
             type="url"
             placeholder="Insert link to job description here"
             className="w-full bg-background dark:bg-background/50 outline-none rounded-md px-4 py-2
-              transition-all duration-300"
+              transition-all duration-300 border border-transparent hover:border-purple-500/50 focus:border-pink-500/50"
             value={status || url}
             onChange={handleUrlChange}
             readOnly={isLoading || stage !== 'url'}

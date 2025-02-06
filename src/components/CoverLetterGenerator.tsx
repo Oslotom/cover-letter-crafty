@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { HfInference } from '@huggingface/inference';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +11,7 @@ interface CoverLetterGeneratorProps {
   isEditing?: boolean;
   onEdit?: () => void;
   onDownload?: () => void;
+  autoGenerate?: boolean;
 }
 
 export const CoverLetterGenerator = ({ 
@@ -18,7 +19,8 @@ export const CoverLetterGenerator = ({
   jobContent, 
   isEditing,
   onEdit,
-  onDownload 
+  onDownload,
+  autoGenerate = false
 }: CoverLetterGeneratorProps) => {
   const [coverLetter, setCoverLetter] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -89,28 +91,23 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
     }
   };
 
+  useEffect(() => {
+    if (autoGenerate && !coverLetter && !isGenerating) {
+      generateCoverLetter();
+    }
+  }, [autoGenerate, cvContent, jobContent]);
+
   return (
     <div className="space-y-4">
       {!coverLetter ? (
-        <Button
-          onClick={generateCoverLetter}
-          disabled={isGenerating || !cvContent || !jobContent}
-          className="w-full min-h-[60px]"
-        >
-          {isGenerating ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating...
-            </>
-          ) : isSuccess ? (
-            <>
-              <Check className="mr-2 h-4 w-4" />
-              Created Successfully
-            </>
-          ) : (
-            "Create Cover Letter"
+        <div className="flex items-center justify-center min-h-[60px]">
+          {isGenerating && (
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Generating cover letter...</span>
+            </div>
           )}
-        </Button>
+        </div>
       ) : (
         <div className="space-y-4">
           <div className="flex justify-end space-x-2">
