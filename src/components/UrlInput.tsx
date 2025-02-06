@@ -13,7 +13,7 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState('');
-  const [stage, setStage] = useState<'url' | 'resume' | 'create' | 'view'>('url');
+  const [stage, setStage] = useState<'url' | 'resume' | 'view'>('url');
   const [cvContent, setCvContent] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -70,15 +70,6 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
     await updateStatus([
       'Uploading resume...',
       'Reading resume...',
-      'I am ready to create a cover letter'
-    ]);
-    setStage('create');
-  };
-
-  const handleCreate = async () => {
-    await updateStatus([
-      'Analyzing data...',
-      'Generating cover letter...',
       'Cover letter is complete'
     ]);
     setStage('view');
@@ -101,8 +92,8 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
           <input
             type="url"
             placeholder="Insert link to job description here"
-            className={`w-full bg-background dark:bg-background/50 outline-none rounded-md px-4 py-2
-              transition-all duration-300`}
+            className="w-full bg-background dark:bg-background/50 outline-none rounded-md px-4 py-2
+              transition-all duration-300"
             value={status || url}
             onChange={handleUrlChange}
             readOnly={isLoading || stage !== 'url'}
@@ -128,15 +119,6 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
           >
             <Upload className="w-4 h-4" />
             <span>Upload</span>
-          </Button>
-        )}
-        {stage === 'create' && (
-          <Button
-            onClick={handleCreate}
-            variant="default"
-            className="px-10 h-[50px] bg-gradient-to-r from-purple-500 to-pink-600 hover:opacity-90 transition"
-          >
-            Create
           </Button>
         )}
         {stage === 'view' && (

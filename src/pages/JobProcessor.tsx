@@ -82,13 +82,9 @@ Return ONLY the job title, no other text:`,
       <div className="container max-w-4xl mx-auto space-y-8 px-6 md:px-4 py-20 pt-28">
         <div className="text-center space-y-6">
           <p className="text-lg text-muted-foreground">Your Cover Letter</p>
-          <button 
-            onClick={() => {}}
-            className="group text-4xl mx-auto text-foreground hover:text-primary transition-colors flex items-center justify-center gap-2"
-          >       
-            {jobTitle}
-            <ExternalLink className="w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity" />
-          </button>
+          <h1 className="text-4xl font-bold">
+            <span className="span-gradient-text">{jobTitle}</span>
+          </h1>
           
           {sourceUrl && (
             <div className="flex items-center justify-center gap-2 text-muted-foreground">
