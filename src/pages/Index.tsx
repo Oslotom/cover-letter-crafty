@@ -27,7 +27,7 @@ const Index = () => {
   
   return (
     <div className="min-h-screen py-8 bg-background dark:bg-gradient-to-b dark:from-[#1a242f] dark:to-[#222f3a]">
-      <div className="container max-w-2xl mx-auto space-y-2 pt-16 p-6">
+      <div className="container max-w-2xl mx-auto space-y-2 pt-12 p-4">
         <div className="text-center space-y-4">
           <h1 className="text-6xl">
             <span className="span-gradient-text font-bold">Create free cover letter with AI </span>
