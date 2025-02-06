@@ -3,10 +3,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { CoverLetterGenerator } from '@/components/CoverLetterGenerator';
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { HfInference } from '@huggingface/inference';
 import { Wand2, Save } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
+import { AIEditSection } from '@/components/job-processor/AIEditSection';
+import { JobHeader } from '@/components/job-processor/JobHeader';
 
 interface LocationState {
   jobContent: string;
@@ -138,71 +139,10 @@ const JobProcessor = () => {
     }
   };
 
-  const handleAIEdit = async () => {
-    if (!aiPrompt.trim() || !currentCoverLetter) {
-      toast({
-        title: "Missing content",
-        description: "Please provide both edit instructions and ensure there's a cover letter to edit",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const hf = new HfInference("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");
-      const prompt = `Edit this cover letter according to these instructions: "${aiPrompt}"
-
-Current cover letter:
-${currentCoverLetter}
-
-Provide ONLY the edited cover letter text, without any additional text or formatting. Keep the professional tone and maintain relevance to the job requirements.`;
-
-      const response = await hf.textGeneration({
-        model: 'mistralai/Mistral-7B-Instruct-v0.2',
-        inputs: prompt,
-        parameters: {
-          max_new_tokens: 800,
-          temperature: 0.7,
-          return_full_text: false
-        }
-      });
-
-      setCurrentCoverLetter(response.generated_text.trim());
-      setIsEditingWithAI(false);
-      setAiPrompt('');
-
-      toast({
-        title: "Success",
-        description: "Cover letter updated successfully",
-      });
-    } catch (error) {
-      console.error('Error editing with AI:', error);
-      toast({
-        title: "Error",
-        description: "Failed to edit cover letter with AI",
-        variant: "destructive",
-      });
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <div className="container max-w-2xl mx-auto space-y-8 px-6 md:px-4 py-15">
-        <div className="text-center space-y-6">
-          <p className="text-lg text-muted-foreground">Your Cover Letter</p>
-          <h1 className="text-4xl font-bold">
-            <span className="span-gradient-text">{jobTitle}</span>
-          </h1>
-          
-          {sourceUrl && (
-            <div className="flex items-center justify-center gap-2 text-muted-foreground">
-              <a href={sourceUrl} target="_blank" rel="noopener noreferrer" 
-                className="hover:text-foreground transition-colors">
-                {sourceUrl}
-              </a>
-            </div>
-          )}
-        </div>
+        <JobHeader jobTitle={jobTitle} sourceUrl={sourceUrl} />
 
         <div className="space-y-4">
           <div className="flex justify-end max-w-2xl mx-auto gap-2">
@@ -226,25 +166,14 @@ Provide ONLY the edited cover letter text, without any additional text or format
             </Button>
           </div>
 
-          {isEditingWithAI && (
-            <div className="space-y-4 mb-4 max-w-2xl mx-auto">
-              <Textarea
-                placeholder="Describe how you want to edit the cover letter..."
-                value={aiPrompt}
-                onChange={(e) => setAiPrompt(e.target.value)}
-                className="min-h-[100px]"
-              />
-              <div className="flex justify-end gap-2">
-                <Button
-                  size="sm"
-                  onClick={handleAIEdit}
-                  className="bg-gradient-to-r from-purple-500 to-pink-600 hover:opacity-90"
-                >
-                  Update Cover Letter!
-                </Button>
-              </div>
-            </div>
-          )}
+          <AIEditSection
+            isEditing={isEditingWithAI}
+            aiPrompt={aiPrompt}
+            currentCoverLetter={currentCoverLetter}
+            onPromptChange={setAiPrompt}
+            onCoverLetterChange={setCurrentCoverLetter}
+            onEditingChange={setIsEditingWithAI}
+          />
 
           <CoverLetterGenerator
             cvContent={cvContent}

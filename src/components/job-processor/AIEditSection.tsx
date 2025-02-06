@@ -1,0 +1,94 @@
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { HfInference } from '@huggingface/inference';
+import { Wand2 } from "lucide-react";
+
+interface AIEditSectionProps {
+  isEditing: boolean;
+  aiPrompt: string;
+  currentCoverLetter: string;
+  onPromptChange: (prompt: string) => void;
+  onCoverLetterChange: (letter: string) => void;
+  onEditingChange: (editing: boolean) => void;
+}
+
+export const AIEditSection = ({
+  isEditing,
+  aiPrompt,
+  currentCoverLetter,
+  onPromptChange,
+  onCoverLetterChange,
+  onEditingChange
+}: AIEditSectionProps) => {
+  const { toast } = useToast();
+
+  const handleAIEdit = async () => {
+    if (!aiPrompt.trim() || !currentCoverLetter) {
+      toast({
+        title: "Missing content",
+        description: "Please provide both edit instructions and ensure there's a cover letter to edit",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const hf = new HfInference("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");
+      const prompt = `Edit this cover letter according to these instructions: "${aiPrompt}"
+
+Current cover letter:
+${currentCoverLetter}
+
+Provide ONLY the edited cover letter text, without any additional text or formatting. Keep the professional tone and maintain relevance to the job requirements.`;
+
+      const response = await hf.textGeneration({
+        model: 'mistralai/Mistral-7B-Instruct-v0.2',
+        inputs: prompt,
+        parameters: {
+          max_new_tokens: 800,
+          temperature: 0.7,
+          return_full_text: false
+        }
+      });
+
+      onCoverLetterChange(response.generated_text.trim());
+      onEditingChange(false);
+      onPromptChange('');
+
+      toast({
+        title: "Success",
+        description: "Cover letter updated successfully",
+      });
+    } catch (error) {
+      console.error('Error editing with AI:', error);
+      toast({
+        title: "Error",
+        description: "Failed to edit cover letter with AI",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (!isEditing) return null;
+
+  return (
+    <div className="space-y-4 mb-4 max-w-2xl mx-auto">
+      <Textarea
+        placeholder="Describe how you want to edit the cover letter..."
+        value={aiPrompt}
+        onChange={(e) => onPromptChange(e.target.value)}
+        className="min-h-[100px]"
+      />
+      <div className="flex justify-end gap-2">
+        <Button
+          size="sm"
+          onClick={handleAIEdit}
+          className="bg-gradient-to-r from-purple-500 to-pink-600 hover:opacity-90"
+        >
+          Update Cover Letter!
+        </Button>
+      </div>
+    </div>
+  );
+};
