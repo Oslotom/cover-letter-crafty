@@ -6,8 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Upload, Check, Loader2 } from "lucide-react";
 
 // Set worker source path
-const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.entry');
-pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker.default;
+pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 interface FileUploadProps {
   onFileContent: (content: string) => void;

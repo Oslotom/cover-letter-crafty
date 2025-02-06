@@ -19,13 +19,11 @@ export default defineConfig(({ mode }) => ({
       "react": path.resolve(__dirname, "./node_modules/react"),
     },
   },
-  optimizeDeps: {
-    include: ['pdfjs-dist']
-  },
   build: {
-    commonjsOptions: {
-      include: [/pdfjs-dist/, /node_modules/],
-      transformMixedEsModules: true
+    rollupOptions: {
+      external: [
+        'pdfjs-dist/build/pdf.worker.entry'
+      ]
     }
   }
 }));
