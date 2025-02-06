@@ -35,14 +35,14 @@ const JobProcessor = () => {
     const extractJobTitle = async () => {
       try {
         const hf = new HfInference("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");
-        const prompt = `Extract ONLY the job title or role from this job posting. Return ONLY the exact job title, no other text. Here's the content: ${jobContent.substring(0, 500)}`;
+        const prompt = `Identify and return ONLY the job title text. The job title is the name of the role that the text describes. Respond with ONLY the job title name. dont include intro text or any other text that is not the job title name. What is the name of the role?: ${jobContent.substring(0, 500)}`;
         
         const response = await hf.textGeneration({
           model: 'mistralai/Mistral-7B-Instruct-v0.2',
           inputs: prompt,
           parameters: {
-            max_new_tokens: 50,
-            temperature: 0.1,
+            max_new_tokens: 15,
+            temperature: 0.001,
             return_full_text: false
           }
         });
@@ -127,7 +127,7 @@ Provide ONLY the edited cover letter text, without any additional text or format
         </div>
 
         <div className="space-y-4">
-          <div className="flex justify-end">
+          <div className="flex justify-end max-w-2xl mx-auto ">
             <Button
               variant="outline"
               size="sm"
