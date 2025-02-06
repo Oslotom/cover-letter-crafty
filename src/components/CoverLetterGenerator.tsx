@@ -30,6 +30,11 @@ export const CoverLetterGenerator = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
 
+  const truncateText = (text: string, maxLength: number = 10000): string => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  };
+
   const generateCoverLetter = async () => {
     if (!cvContent || !jobContent) {
       toast({
@@ -44,18 +49,21 @@ export const CoverLetterGenerator = ({
     try {
       const hf = new HfInference("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");
       
+      const truncatedCV = truncateText(cvContent);
+      const truncatedJob = truncateText(jobContent);
+      
       const finalPrompt = `Generate a professional cover letter based on the CV and job description below. The cover letter should highlight relevant experience and skills from the CV that match the job requirements. Keep it very short. Keep it concise and professional, under 150 words.
 
 Resume Content:
-${cvContent}
+${truncatedCV}
 
 Job Description:
-${jobContent}
+${truncatedJob}
 
 Generate ONLY the cover letter body text, without any salutations, signatures, or formatting. Focus on making compelling connections between the candidate's experience and the job requirements.`;
 
       const response = await hf.textGeneration({
-        model: 'mistralai/Mistral-7B-Instruct-v0.3',
+        model: 'mistralai/Mistral-7B-Instruct-v0.2',
         inputs: finalPrompt,
         parameters: {
           max_new_tokens: 300,
@@ -120,8 +128,8 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
           )}
         </div>
       ) : (
-        <div className="space-y-4 max-w-2xl mx-auto  ">
-          <div className="flex justify-end space-x-2  ">
+        <div className="space-y-4 max-w-2xl mx-auto">
+          <div className="flex justify-end space-x-2">
             <Button
               variant="outline"
               size="sm"
@@ -150,7 +158,7 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
               Download
             </Button>
           </div>
-          <div className=" flex items-center justify-center max-w-2xl mx-auto shadow-5xl rounded-lg min-h-[600px] h-auto ">
+          <div className="flex items-center justify-center max-w-2xl mx-auto shadow-5xl rounded-lg min-h-[600px] h-auto">
             <Textarea
               value={coverLetter}
               onChange={(e) => {
