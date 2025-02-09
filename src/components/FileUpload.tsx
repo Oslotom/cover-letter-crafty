@@ -39,17 +39,30 @@ export const FileUpload = ({ onFileContent, contentType, showSuccessInButton }: 
         formData.append('file', file);
 
         // Call the edge function to process the PDF
-        const { data: { data }, error } = await supabase.functions.invoke('process-pdf', {
+        const { data, error } = await supabase.functions.invoke('process-pdf', {
           body: formData,
         });
 
-        if (error) throw error;
+        console.log('Edge function response:', data); // Debug log
+
+        if (error) {
+          console.error('Edge function error:', error);
+          throw error;
+        }
+
+        if (!data || typeof data.text !== 'string') {
+          console.error('Invalid response format:', data);
+          throw new Error('Invalid response format from PDF processor');
+        }
+
         content = data.text;
+        console.log('Extracted text length:', content.length); // Debug log
       } else {
         // For text files, read directly
         content = await file.text();
       }
 
+      console.log('Setting content...'); // Debug log
       onFileContent(content);
       setIsSuccess(true);
     } catch (error) {
