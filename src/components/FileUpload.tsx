@@ -1,13 +1,7 @@
 
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import * as pdfjs from 'pdfjs-dist';
-import { Upload, Check } from "lucide-react";
-
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.js',
-  import.meta.url,
-).toString();
+import { Upload, Check, Loader2 } from "lucide-react";
 
 interface FileUploadProps {
   onFileContent: (content: string) => void;
@@ -19,33 +13,11 @@ export const FileUpload = ({ onFileContent, contentType, showSuccessInButton }: 
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const extractTextFromPdf = async (file: File): Promise<string> => {
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
-      let fullText = '';
-      
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        const pageText = textContent.items
-          .map((item: any) => item.str)
-          .join(' ');
-        fullText += pageText + '\n';
-      }
-      
-      return fullText;
-    } catch (error) {
-      console.error('Error extracting text from PDF:', error);
-      throw new Error('Failed to extract text from PDF');
-    }
-  };
-
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const MAX_FILE_SIZE = 5 * 1024 * 1024;
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     if (file.size > MAX_FILE_SIZE) {
       console.error('File size must be less than 5MB');
       return;
@@ -62,18 +34,21 @@ export const FileUpload = ({ onFileContent, contentType, showSuccessInButton }: 
       let content: string;
       
       if (file.type === 'application/pdf') {
-        content = await extractTextFromPdf(file);
+        // Create form data for the file
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // Call the edge function to process the PDF
+        const { data: { data }, error } = await supabase.functions.invoke('process-pdf', {
+          body: formData,
+        });
+
+        if (error) throw error;
+        content = data.text;
       } else {
+        // For text files, read directly
         content = await file.text();
       }
-
-      const fileName = `${Date.now()}-${contentType}.txt`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('pdfs')
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
 
       onFileContent(content);
       setIsSuccess(true);
@@ -102,7 +77,12 @@ export const FileUpload = ({ onFileContent, contentType, showSuccessInButton }: 
             bg-background/50 relative group"
         >
           <div className="text-center text-foreground/60 group-hover:text-foreground/80 transition-colors">
-            {isSuccess ? (
+            {isLoading ? (
+              <>
+                <Loader2 className="mx-auto h-6 w-6 mb-2 animate-spin" />
+                <p>Processing file...</p>
+              </>
+            ) : isSuccess ? (
               <>
                 <Check className="mx-auto h-6 w-6 mb-2 text-green-500" />
                 <p>Resume uploaded successfully</p>
