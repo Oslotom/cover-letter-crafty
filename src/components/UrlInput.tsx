@@ -35,7 +35,7 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
     if (!url.trim()) return;
     
     setIsLoading(true);
-    setStage('resume'); // Hide the Analyze button immediately
+    setStage('resume');
     try {
       await updateStatus([
         'Opening website...',
@@ -63,26 +63,45 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
       setStage('resume');
     } catch (error) {
       console.error('Error fetching URL:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load job posting",
+        variant: "destructive"
+      });
       setStatus('Error loading job posting');
-      setStage('url'); // Return to URL input stage on error
+      setStage('url');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleFileContent = async (content: string) => {
+  const handleFileContent = (content: string) => {
+    console.log('CV content length:', content.length); // Debug log
     setCvContent(content);
     setStatus('Resume uploaded successfully');
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setStage('view');
+    setTimeout(() => {
+      setStage('view');
+    }, 1000);
   };
 
   const handleView = () => {
+    if (!cvContent || !jobDescription) {
+      toast({
+        title: "Missing content",
+        description: "Please ensure both job description and resume are provided",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    console.log('Navigating with CV content length:', cvContent.length); // Debug log
+    console.log('Navigating with job content length:', jobDescription.length); // Debug log
+
     navigate('/job-processor', { 
       state: { 
         jobContent: jobDescription,
         sourceUrl: url,
-        cvContent,
+        cvContent: cvContent,
         shouldGenerateOnMount: true
       }
     });
@@ -137,7 +156,7 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
           </Button>
         )}
       </div>
-      <div className="hidden">
+      <div className="mt-4">
         <FileUpload onFileContent={handleFileContent} contentType="cv" />
       </div>
     </div>
