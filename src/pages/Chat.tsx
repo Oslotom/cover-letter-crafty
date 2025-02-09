@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { FileUpload } from '@/components/FileUpload';
 import { UrlInput } from '@/components/UrlInput';
@@ -29,7 +30,10 @@ const Chat = () => {
           <div className="flex flex-col space-y-4">
             <div className="flex items-center space-x-4">
               <FileUpload onFileContent={handleFileContent} contentType="cv" />
-              <UrlInput onUrlContent={handleUrlContent} />
+              <UrlInput 
+                onUrlContent={handleUrlContent} 
+                onCvContent={handleFileContent}
+              />
             </div>
           </div>
 
