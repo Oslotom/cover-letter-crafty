@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { FileUpload } from '@/components/FileUpload';
 import { UrlInput } from '@/components/UrlInput';
@@ -25,6 +26,16 @@ const Index = () => {
     }
   ];
   
+  const handleJobContent = (content: string) => {
+    console.log('Job content received:', content.length);
+    setJobContent(content);
+  };
+
+  const handleCvContent = (content: string) => {
+    console.log('CV content received:', content.length);
+    setCvContent(content);
+  };
+  
   return (
     <div className="min-h-screen py-8 bg-background dark:bg-gradient-to-b dark:from-[#1a242f] dark:to-[#222f3a]">
       <div className="container max-w-2xl mx-auto space-y-2 pt-12 p-4">
@@ -39,7 +50,10 @@ const Index = () => {
         </div>
         
         <div className="max-w-4xl mx-auto">
-          <UrlInput onUrlContent={setJobContent} />
+          <UrlInput 
+            onUrlContent={handleJobContent} 
+            onCvContent={handleCvContent} 
+          />
         </div>
         
       </div>

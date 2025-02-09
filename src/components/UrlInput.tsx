@@ -8,9 +8,10 @@ import { FileUpload } from './FileUpload';
 
 interface UrlInputProps {
   onUrlContent: (content: string) => void;
+  onCvContent: (content: string) => void;
 }
 
-export function UrlInput({ onUrlContent }: UrlInputProps) {
+export function UrlInput({ onUrlContent, onCvContent }: UrlInputProps) {
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState('');
@@ -76,8 +77,9 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
   };
 
   const handleFileContent = (content: string) => {
-    console.log('CV content length:', content.length); // Debug log
+    console.log('CV content received in UrlInput:', content.length);
     setCvContent(content);
+    onCvContent(content); // Update parent's CV content
     setStatus('Resume uploaded successfully');
     setTimeout(() => {
       setStage('view');
@@ -94,8 +96,8 @@ export function UrlInput({ onUrlContent }: UrlInputProps) {
       return;
     }
 
-    console.log('Navigating with CV content length:', cvContent.length); // Debug log
-    console.log('Navigating with job content length:', jobDescription.length); // Debug log
+    console.log('Navigating with CV content length:', cvContent.length);
+    console.log('Navigating with job content length:', jobDescription.length);
 
     navigate('/job-processor', { 
       state: { 
