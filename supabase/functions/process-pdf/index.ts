@@ -65,14 +65,20 @@ serve(async (req) => {
 
     // Extract text from each page
     for (const page of pages) {
-      const textObjects = page.node.Contents().map(content => {
-        if (content.getType() === 'string') {
-          return content.string
+      try {
+        const content = page.node.Contents()
+        // Check if content exists and is iterable
+        if (content && typeof content === 'object') {
+          const operatorList = Array.isArray(content) ? content : [content]
+          const textParts = operatorList
+            .map(op => op && typeof op.toString === 'function' ? op.toString() : '')
+            .filter(text => text.length > 0)
+          
+          textContent += textParts.join(' ') + '\n'
         }
-        return ''
-      }).filter(Boolean)
-
-      textContent += textObjects.join(' ') + '\n'
+      } catch (error) {
+        console.error('Error extracting text from page:', error)
+      }
     }
 
     console.log('Successfully extracted text from PDF')
