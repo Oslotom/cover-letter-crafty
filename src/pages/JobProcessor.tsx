@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CoverLetterGenerator } from '@/components/CoverLetterGenerator';
-import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { HfInference } from '@huggingface/inference';
 import { Wand2, Save } from "lucide-react";
@@ -22,7 +21,6 @@ interface LocationState {
 const JobProcessor = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingWithAI, setIsEditingWithAI] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
@@ -49,11 +47,7 @@ const JobProcessor = () => {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to save applications",
-          variant: "destructive",
-        });
+        navigate('/auth');
         return;
       }
 
@@ -70,12 +64,6 @@ const JobProcessor = () => {
           .eq('id', applicationId);
 
         if (error) throw error;
-
-        toast({
-          title: "Success",
-          description: "Application updated successfully",
-        });
-
         navigate('/dashboard');
       } else {
         const { data, error } = await supabase
@@ -96,22 +84,12 @@ const JobProcessor = () => {
 
         if (error) throw error;
 
-        toast({
-          title: "Success",
-          description: "Application saved successfully",
-        });
-
         if (data?.id) {
           navigate('/dashboard');
         }
       }
     } catch (error) {
       console.error('Error saving application:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save application",
-        variant: "destructive",
-      });
     }
   };
 
