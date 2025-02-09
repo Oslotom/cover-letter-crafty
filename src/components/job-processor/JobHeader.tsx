@@ -1,3 +1,6 @@
+
+import { Link2 } from "lucide-react";
+
 interface JobHeaderProps {
   jobTitle: string;
   sourceUrl?: string;
@@ -13,9 +16,10 @@ export const JobHeader = ({ jobTitle, sourceUrl }: JobHeaderProps) => {
       
       {sourceUrl && (
         <div className="flex items-center justify-center gap-2 text-muted-foreground">
+          <Link2 className="w-4 h-4" />
           <a href={sourceUrl} target="_blank" rel="noopener noreferrer" 
             className="hover:text-foreground transition-colors">
-            {sourceUrl}
+            Link to job description
           </a>
         </div>
       )}

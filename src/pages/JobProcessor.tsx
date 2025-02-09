@@ -22,7 +22,6 @@ const JobProcessor = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [jobTitle, setJobTitle] = useState<string>('');
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingWithAI, setIsEditingWithAI] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
@@ -35,37 +34,13 @@ const JobProcessor = () => {
     currentCoverLetter: initialCoverLetter 
   } = (location.state as LocationState) || {};
   const [currentCoverLetter, setCurrentCoverLetter] = useState(initialCoverLetter || '');
+  const [jobTitle, setJobTitle] = useState<string>('');
 
   useEffect(() => {
     if (!jobContent || !cvContent) {
       navigate('/');
       return;
     }
-
-    const extractJobTitle = async () => {
-      try {
-        const hf = new HfInference("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");
-        const prompt = `Identify and return ONLY the job title text. The job title is the name of the role that the text describes. Respond with ONLY the job title name. dont include intro text or any other text that is not the job title name. What is the name of the role?: ${jobContent.substring(0, 500)}`;
-        
-        const response = await hf.textGeneration({
-          model: 'mistralai/Mistral-7B-Instruct-v0.2',
-          inputs: prompt,
-          parameters: {
-            max_new_tokens: 15,
-            temperature: 0.001,
-            return_full_text: false
-          }
-        });
-
-        const extractedTitle = response.generated_text.trim();
-        setJobTitle(extractedTitle || 'Job Position');
-      } catch (error) {
-        console.error('Error extracting job title:', error);
-        setJobTitle('Job Position');
-      }
-    };
-
-    extractJobTitle();
   }, [jobContent, navigate, cvContent]);
 
   const saveApplication = async () => {
@@ -142,7 +117,7 @@ const JobProcessor = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container max-w-2xl mx-auto space-y-8 px-6 md:px-4 py-15">
-        <JobHeader jobTitle={jobTitle} sourceUrl={sourceUrl} />
+        <JobHeader jobTitle="Cover Letter" sourceUrl={sourceUrl} />
 
         <div className="space-y-4">
           <div className="flex justify-end max-w-2xl mx-auto gap-2">

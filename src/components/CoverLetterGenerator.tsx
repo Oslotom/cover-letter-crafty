@@ -158,7 +158,7 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
               Download
             </Button>
           </div>
-          <div className="flex items-center justify-center max-w-2xl mx-auto rounded-lg min-h-[600px] h-auto">
+          <div className="flex items-center justify-center max-w-2xl mx-auto rounded-lg">
             <Textarea
               value={coverLetter}
               onChange={(e) => {
@@ -167,8 +167,9 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
                   onCoverLetterChange(e.target.value);
                 }
               }}
-              className="min-h-[900px] shadow-xl font-serif p-6 text-base leading-relaxed rounded-5 resize-none"
+              className="min-h-0 h-auto shadow-xl font-serif p-6 text-sm leading-relaxed rounded-5 resize-none"
               readOnly={!isEditing}
+              style={{ height: 'auto' }}
             />
           </div>
         </div>
