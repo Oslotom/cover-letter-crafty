@@ -57,15 +57,22 @@ serve(async (req) => {
       )
     }
 
-    // Get the PDF content as text
+    // Load and process the PDF
     const arrayBuffer = await file.arrayBuffer()
     const pdfDoc = await PDFDocument.load(arrayBuffer)
     const pages = pdfDoc.getPages()
     let textContent = ''
 
+    // Extract text from each page
     for (const page of pages) {
-      const text = await page.getText()
-      textContent += text + '\n'
+      const textObjects = page.node.Contents().map(content => {
+        if (content.getType() === 'string') {
+          return content.string
+        }
+        return ''
+      }).filter(Boolean)
+
+      textContent += textObjects.join(' ') + '\n'
     }
 
     console.log('Successfully extracted text from PDF')
