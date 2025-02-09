@@ -37,7 +37,7 @@ export const ApplicationStatusSelect = ({
     <select
       value={application.status || 'Wishlist'}
       onChange={(e) => handleStatusChange(e.target.value as ApplicationStatus)}
-      className="bg-transparent border rounded px-2 py-1"
+      className="bg-transparent px-1 py-1"
     >
       <option value="Wishlist">Wishlist</option>
       <option value="Applied">Applied</option>

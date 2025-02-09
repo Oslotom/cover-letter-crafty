@@ -9,7 +9,6 @@ interface JobHeaderProps {
 export const JobHeader = ({ jobTitle, sourceUrl }: JobHeaderProps) => {
   return (
     <div className="text-center space-y-6">
-      <p className="text-lg text-muted-foreground">Your Cover Letter</p>
       <h1 className="text-4xl font-bold">
         <span className="span-gradient-text">{jobTitle}</span>
       </h1>

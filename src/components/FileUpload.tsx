@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+
 import * as pdfjs from 'pdfjs-dist';
 import { Upload, Check } from "lucide-react";
 
@@ -19,7 +19,7 @@ interface FileUploadProps {
 export const FileUpload = ({ onFileContent, contentType, showSuccessInButton }: FileUploadProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const { toast } = useToast();
+
 
   const extractTextFromPdf = async (file: File): Promise<string> => {
     try {
@@ -50,22 +50,14 @@ export const FileUpload = ({ onFileContent, contentType, showSuccessInButton }: 
     // Check file size (5MB limit)
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
     if (file.size > MAX_FILE_SIZE) {
-      toast({
-        title: "Error",
-        description: "File size must be less than 5MB",
-        variant: "destructive"
-      });
+     
       return;
     }
 
     // Check file type
     const allowedTypes = ['application/pdf', 'text/plain'];
     if (!allowedTypes.includes(file.type)) {
-      toast({
-        title: "Error",
-        description: "Only PDF and TXT files are allowed",
-        variant: "destructive"
-      });
+     
       return;
     }
 
@@ -89,17 +81,10 @@ export const FileUpload = ({ onFileContent, contentType, showSuccessInButton }: 
 
       onFileContent(content);
       setIsSuccess(true);
-      toast({
-        title: "Success",
-        description: "File uploaded and processed successfully",
-      });
+      
     } catch (error) {
       console.error('Error processing file:', error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to process file",
-        variant: "destructive"
-      });
+      
     } finally {
       setIsLoading(false);
     }

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { HfInference } from '@huggingface/inference';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
 import { Loader2, Download, Edit2, Save } from "lucide-react";
 
 interface CoverLetterGeneratorProps {
@@ -28,7 +27,7 @@ export const CoverLetterGenerator = ({
 }: CoverLetterGeneratorProps) => {
   const [coverLetter, setCoverLetter] = useState(currentCoverLetter || '');
   const [isGenerating, setIsGenerating] = useState(false);
-  const { toast } = useToast();
+
 
   const truncateText = (text: string, maxLength: number = 10000): string => {
     if (text.length <= maxLength) return text;
@@ -37,11 +36,7 @@ export const CoverLetterGenerator = ({
 
   const generateCoverLetter = async () => {
     if (!cvContent || !jobContent) {
-      toast({
-        title: "Missing content",
-        description: "Please provide both CV and job description",
-        variant: "destructive",
-      });
+    
       return;
     }
 
@@ -66,7 +61,7 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
         model: 'mistralai/Mistral-7B-Instruct-v0.3',
         inputs: finalPrompt,
         parameters: {
-          max_new_tokens: 350,
+          max_new_tokens: 300,
           temperature: 0.001,
           top_p: 0.9,
           repetition_penalty: 1.2,
@@ -87,18 +82,11 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
         onCoverLetterChange(generatedText);
       }
 
-      toast({
-        title: "Success",
-        description: "Cover letter generated successfully",
-      });
+
 
     } catch (error) {
       console.error('Error generating cover letter:', error);
-      toast({
-        title: "Error",
-        description: "Failed to generate cover letter",
-        variant: "destructive",
-      });
+     
     } finally {
       setIsGenerating(false);
     }
@@ -129,25 +117,10 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
         </div>
       ) : (
         <div className="space-y-4 max-w-2xl mx-auto">
+          
           <div className="flex justify-end space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onEdit}
-              className="gap-2"
-            >
-              {isEditing ? (
-                <>
-                  <Save className="h-4 w-4" />
-                  Save
-                </>
-              ) : (
-                <>
-                  <Edit2 className="h-4 w-4" />
-                  Edit
-                </>
-              )}
-            </Button>
+           
+        
             <Button
               variant="outline"
               size="sm"
@@ -158,7 +131,7 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
               Download
             </Button>
           </div>
-          <div className="flex items-center justify-center max-w-2xl mx-auto rounded-lg">
+          <div className="flex items-center justify-center max-w-2xl rounded-xs">
             <Textarea
               value={coverLetter}
               onChange={(e) => {
@@ -167,7 +140,7 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
                   onCoverLetterChange(e.target.value);
                 }
               }}
-              className="min-h-0 h-auto shadow-xl font-serif p-6 text-sm leading-relaxed rounded-5 resize-none"
+              className="min-h-screen font-serif p-6 text-sm leading-relaxed rounded-1 resize-none"
               readOnly={!isEditing}
               style={{ height: 'auto' }}
             />

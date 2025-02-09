@@ -121,15 +121,7 @@ const JobProcessor = () => {
 
         <div className="space-y-4">
           <div className="flex justify-end max-w-2xl mx-auto gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsEditingWithAI(true)}
-              className="gap-2"
-            >
-              <Wand2 className="w-4 h-4" />
-              Edit with AI
-            </Button>
+            
             <Button
               variant="default"
               size="sm"

@@ -64,8 +64,7 @@ export const ApplicationsTable = ({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-3/4">Job Title</TableHead>
-          <TableHead>Status</TableHead>
+          <TableHead className="border-none w-3/4 ">Job Title</TableHead>
           <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
@@ -73,10 +72,10 @@ export const ApplicationsTable = ({
         {applications.map((app) => (
           <TableRow 
             key={app.id} 
-            className="cursor-pointer hover:bg-muted/50"
+            className="border-none cursor-pointer "
             onClick={() => handleRowClick(app.id)}
           >
-            <TableCell className="py-4">
+            <TableCell className="py-4 ">
               {editingId === app.id ? (
                 <Input
                   value={editedTitle}
@@ -88,15 +87,10 @@ export const ApplicationsTable = ({
                 app.job_title
               )}
             </TableCell>
-            <TableCell onClick={(e) => e.stopPropagation()}>
-              <ApplicationStatusSelect 
-                application={app}
-                onStatusChange={onStatusChange}
-              />
-            </TableCell>
+    
             <TableCell onClick={(e) => e.stopPropagation()}>
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -106,17 +100,17 @@ export const ApplicationsTable = ({
                     handleEditTitle(app);
                   }
                 }}
-                className="gap-2"
+                className="gap-2 bg-transparent"
               >
                 {editingId === app.id ? (
                   <>
-                    <Save className="h-4 w-4" />
-                    Save
+                    <Save className="h-3 w-3" />
+                  
                   </>
                 ) : (
                   <>
-                    <Edit2 className="h-4 w-4" />
-                    Edit
+                    <Edit2 className="h-3 w-3" />
+                  
                   </>
                 )}
               </Button>
