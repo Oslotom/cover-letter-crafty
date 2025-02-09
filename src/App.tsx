@@ -17,7 +17,7 @@ import CoverLetter from '@/pages/CoverLetter';
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
       <Router>
         <div className="min-h-screen bg-background">
           <Header />
