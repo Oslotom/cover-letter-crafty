@@ -4,7 +4,7 @@ import { CoverLetterGenerator } from '@/components/CoverLetterGenerator';
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { HfInference } from '@huggingface/inference';
-import { Wand2, Save } from "lucide-react";
+import { Wand2, Save, Download } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { AIEditSection } from '@/components/job-processor/AIEditSection';
 import { JobHeader } from '@/components/job-processor/JobHeader';
@@ -115,13 +115,29 @@ const JobProcessor = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-32">
       <div className="container max-w-2xl mx-auto space-y-8 px-6 md:px-4 py-15">
         <JobHeader jobTitle="Cover Letter" sourceUrl={sourceUrl} />
 
         <div className="space-y-4">
           <div className="flex justify-end max-w-2xl mx-auto gap-2">
-            
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => {
+                const element = document.createElement("a");
+                const file = new Blob([currentCoverLetter], {type: 'text/plain'});
+                element.href = URL.createObjectURL(file);
+                element.download = "cover-letter.txt";
+                document.body.appendChild(element);
+                element.click();
+                document.body.removeChild(element);
+              }}
+              className="gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Download
+            </Button>
             <Button
               variant="default"
               size="sm"
@@ -149,15 +165,6 @@ const JobProcessor = () => {
             onEdit={() => setIsEditing(!isEditing)}
             onCoverLetterChange={setCurrentCoverLetter}
             currentCoverLetter={currentCoverLetter}
-            onDownload={() => {
-              const element = document.createElement("a");
-              const file = new Blob([currentCoverLetter], {type: 'text/plain'});
-              element.href = URL.createObjectURL(file);
-              element.download = "cover-letter.txt";
-              document.body.appendChild(element);
-              element.click();
-              document.body.removeChild(element);
-            }}
             autoGenerate={shouldGenerateOnMount}
           />
         </div>

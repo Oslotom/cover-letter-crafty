@@ -1,9 +1,8 @@
+
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { HfInference } from '@huggingface/inference';
 import { Wand2 } from "lucide-react";
-import { FiSend } from "react-icons/fi"; // Import send icon from react-icons
-
 
 interface AIEditSectionProps {
   isEditing: boolean;
@@ -57,22 +56,23 @@ Provide ONLY the edited cover letter text, without any additional text or format
   };
 
   return (
-    <div className="space-y-4 mb-4 max-w-4xl mx-auto ">
-    <div className=" relative flex items-center border border-gray-300 rounded-lg px-3 py-2 w-full">
-    <Textarea
-          placeholder="Update with AI"
-          value={aiPrompt}
-          onChange={(e) => onPromptChange(e.target.value)}
-          className="min-h-[30px] flex-grow border-none focus:ring-0 focus:outline-none"
-          
-        />
-        <Button
-          size="lg"
-          onClick={handleAIEdit}
-          className="min-w-[50px] absolute right-3 p-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-full hover:opacity-90"
+    <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t p-4 z-50">
+      <div className="max-w-4xl mx-auto">
+        <div className="relative flex items-center border border-gray-300 rounded-lg px-3 py-2">
+          <Textarea
+            placeholder="Update with AI"
+            value={aiPrompt}
+            onChange={(e) => onPromptChange(e.target.value)}
+            className="min-h-[40px] max-h-[80px] flex-grow border-none focus:ring-0 focus:outline-none resize-none"
+          />
+          <Button
+            size="sm"
+            onClick={handleAIEdit}
+            className="absolute right-3 p-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-full hover:opacity-90"
           >
-           <Wand2 size={18} />
-        </Button>
+            <Wand2 size={18} />
+          </Button>
+        </div>
       </div>
     </div>
   );
