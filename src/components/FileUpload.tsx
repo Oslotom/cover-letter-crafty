@@ -1,7 +1,14 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Upload, Check, Loader2 } from "lucide-react";
+import { useToast } from '@/hooks/use-toast';
+import * as pdfjs from 'pdfjs-dist';
+import { Upload, Check } from "lucide-react";
+
+// Initialize PDF.js worker
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.js',
+  import.meta.url,
+).toString();
 
 interface FileUploadProps {
   onFileContent: (content: string) => void;
@@ -12,20 +19,53 @@ interface FileUploadProps {
 export const FileUpload = ({ onFileContent, contentType, showSuccessInButton }: FileUploadProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const { toast } = useToast();
+
+  const extractTextFromPdf = async (file: File): Promise<string> => {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+      let fullText = '';
+      
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items
+          .map((item: any) => item.str)
+          .join(' ');
+        fullText += pageText + '\n';
+      }
+      
+      return fullText;
+    } catch (error) {
+      console.error('Error extracting text from PDF:', error);
+      throw new Error('Failed to extract text from PDF');
+    }
+  };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    // Check file size (5MB limit)
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
     if (file.size > MAX_FILE_SIZE) {
-      console.error('File size must be less than 5MB');
+      toast({
+        title: "Error",
+        description: "File size must be less than 5MB",
+        variant: "destructive"
+      });
       return;
     }
 
+    // Check file type
     const allowedTypes = ['application/pdf', 'text/plain'];
     if (!allowedTypes.includes(file.type)) {
-      console.error('Only PDF and TXT files are allowed');
+      toast({
+        title: "Error",
+        description: "Only PDF and TXT files are allowed",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -34,39 +74,32 @@ export const FileUpload = ({ onFileContent, contentType, showSuccessInButton }: 
       let content: string;
       
       if (file.type === 'application/pdf') {
-        // Create form data for the file
-        const formData = new FormData();
-        formData.append('file', file);
-
-        // Call the edge function to process the PDF
-        const { data, error } = await supabase.functions.invoke('process-pdf', {
-          body: formData,
-        });
-
-        console.log('Edge function response:', data); // Debug log
-
-        if (error) {
-          console.error('Edge function error:', error);
-          throw error;
-        }
-
-        if (!data || typeof data.text !== 'string') {
-          console.error('Invalid response format:', data);
-          throw new Error('Invalid response format from PDF processor');
-        }
-
-        content = data.text;
-        console.log('Extracted text length:', content.length); // Debug log
+        content = await extractTextFromPdf(file);
       } else {
-        // For text files, read directly
         content = await file.text();
       }
 
-      console.log('Setting content...'); // Debug log
+      const fileName = `${Date.now()}-${contentType}.txt`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('pdfs')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
       onFileContent(content);
       setIsSuccess(true);
+      toast({
+        title: "Success",
+        description: "File uploaded and processed successfully",
+      });
     } catch (error) {
       console.error('Error processing file:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to process file",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
@@ -90,12 +123,7 @@ export const FileUpload = ({ onFileContent, contentType, showSuccessInButton }: 
             bg-background/50 relative group"
         >
           <div className="text-center text-foreground/60 group-hover:text-foreground/80 transition-colors">
-            {isLoading ? (
-              <>
-                <Loader2 className="mx-auto h-6 w-6 mb-2 animate-spin" />
-                <p>Processing file...</p>
-              </>
-            ) : isSuccess ? (
+            {isSuccess ? (
               <>
                 <Check className="mx-auto h-6 w-6 mb-2 text-green-500" />
                 <p>Resume uploaded successfully</p>

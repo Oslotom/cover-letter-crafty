@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 import { HfInference } from '@huggingface/inference';
 import { Send } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -23,11 +24,16 @@ export const AIEditSection = ({
   onCoverLetterChange,
   onEditingChange
 }: AIEditSectionProps) => {
+  const { toast } = useToast();
   const isMobile = useIsMobile();
 
   const handleAIEdit = async () => {
     if (!aiPrompt.trim() || !currentCoverLetter) {
-      console.error('Missing content');
+      toast({
+        title: "Missing content",
+        description: "Please provide both edit instructions and ensure there's a cover letter to edit",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -53,8 +59,18 @@ Provide ONLY the edited cover letter text, without any additional text or format
       onCoverLetterChange(response.generated_text.trim());
       onEditingChange(false);
       onPromptChange('');
+
+      toast({
+        title: "Success",
+        description: "Cover letter updated successfully",
+      });
     } catch (error) {
       console.error('Error editing with AI:', error);
+      toast({
+        title: "Error",
+        description: "Failed to edit cover letter with AI",
+        variant: "destructive",
+      });
     }
   };
 

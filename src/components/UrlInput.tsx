@@ -8,10 +8,9 @@ import { FileUpload } from './FileUpload';
 
 interface UrlInputProps {
   onUrlContent: (content: string) => void;
-  onCvContent: (content: string) => void;
 }
 
-export function UrlInput({ onUrlContent, onCvContent }: UrlInputProps) {
+export function UrlInput({ onUrlContent }: UrlInputProps) {
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState('');
@@ -36,7 +35,7 @@ export function UrlInput({ onUrlContent, onCvContent }: UrlInputProps) {
     if (!url.trim()) return;
     
     setIsLoading(true);
-    setStage('resume');
+    setStage('resume'); // Hide the Analyze button immediately
     try {
       await updateStatus([
         'Opening website...',
@@ -64,46 +63,26 @@ export function UrlInput({ onUrlContent, onCvContent }: UrlInputProps) {
       setStage('resume');
     } catch (error) {
       console.error('Error fetching URL:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load job posting",
-        variant: "destructive"
-      });
       setStatus('Error loading job posting');
-      setStage('url');
+      setStage('url'); // Return to URL input stage on error
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleFileContent = (content: string) => {
-    console.log('CV content received in UrlInput:', content.length);
+  const handleFileContent = async (content: string) => {
     setCvContent(content);
-    onCvContent(content); // Update parent's CV content
     setStatus('Resume uploaded successfully');
-    setTimeout(() => {
-      setStage('view');
-    }, 1000);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setStage('view');
   };
 
   const handleView = () => {
-    if (!cvContent || !jobDescription) {
-      toast({
-        title: "Missing content",
-        description: "Please ensure both job description and resume are provided",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    console.log('Navigating with CV content length:', cvContent.length);
-    console.log('Navigating with job content length:', jobDescription.length);
-
     navigate('/job-processor', { 
       state: { 
         jobContent: jobDescription,
         sourceUrl: url,
-        cvContent: cvContent,
+        cvContent,
         shouldGenerateOnMount: true
       }
     });
@@ -158,7 +137,7 @@ export function UrlInput({ onUrlContent, onCvContent }: UrlInputProps) {
           </Button>
         )}
       </div>
-      <div className="mt-4">
+      <div className="hidden">
         <FileUpload onFileContent={handleFileContent} contentType="cv" />
       </div>
     </div>
