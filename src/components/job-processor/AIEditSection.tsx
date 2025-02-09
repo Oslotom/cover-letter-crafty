@@ -1,8 +1,11 @@
+
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { HfInference } from '@huggingface/inference';
-import { Wand2 } from "lucide-react";
+import { Send } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 interface AIEditSectionProps {
   isEditing: boolean;
@@ -22,6 +25,7 @@ export const AIEditSection = ({
   onEditingChange
 }: AIEditSectionProps) => {
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const handleAIEdit = async () => {
     if (!aiPrompt.trim() || !currentCoverLetter) {
@@ -73,20 +77,29 @@ Provide ONLY the edited cover letter text, without any additional text or format
   if (!isEditing) return null;
 
   return (
-    <div className="space-y-4 mb-4 max-w-2xl mx-auto">
-      <Textarea
-        placeholder="Describe how you want to edit the cover letter..."
-        value={aiPrompt}
-        onChange={(e) => onPromptChange(e.target.value)}
-        className="min-h-[100px]"
-      />
-      <div className="flex justify-end gap-2">
+    <div className={cn(
+      "space-y-4 mb-4 max-w-2xl mx-auto",
+      isMobile && "fixed bottom-0 left-0 right-0 p-4 bg-background border-t z-50"
+    )}>
+      <div className="flex gap-2">
+        <Textarea
+          placeholder="Describe how you want to edit the cover letter..."
+          value={aiPrompt}
+          onChange={(e) => onPromptChange(e.target.value)}
+          className={cn(
+            "min-h-0",
+            isMobile && "h-10 py-2"
+          )}
+        />
         <Button
           size="sm"
           onClick={handleAIEdit}
-          className="bg-gradient-to-r from-purple-500 to-pink-600 hover:opacity-90"
+          className={cn(
+            "bg-gradient-to-r from-purple-500 to-pink-600 hover:opacity-90",
+            isMobile && "px-3"
+          )}
         >
-          Update Cover Letter!
+          {isMobile ? <Send className="h-4 w-4" /> : "Update Cover Letter!"}
         </Button>
       </div>
     </div>

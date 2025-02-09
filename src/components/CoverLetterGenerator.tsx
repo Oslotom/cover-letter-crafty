@@ -1,9 +1,12 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useRef } from 'react';
 import { HfInference } from '@huggingface/inference';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Download, Edit2, Save } from "lucide-react";
+import { Loader2, Download, Edit2, Save, Send } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CoverLetterGeneratorProps {
   cvContent: string;
@@ -28,6 +31,9 @@ export const CoverLetterGenerator = ({
 }: CoverLetterGeneratorProps) => {
   const [coverLetter, setCoverLetter] = useState(currentCoverLetter || '');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const isMobile = useIsMobile();
   const { toast } = useToast();
 
   const truncateText = (text: string, maxLength: number = 10000): string => {
@@ -116,6 +122,19 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
     }
   }, [currentCoverLetter]);
 
+  useEffect(() => {
+    if (textAreaRef.current) {
+      textAreaRef.current.style.height = 'auto';
+      textAreaRef.current.style.height = textAreaRef.current.scrollHeight + 'px';
+    }
+  }, [coverLetter, isEditing]);
+
+  const wordCount = coverLetter.trim().split(/\s+/).length;
+  const shouldTruncate = !isExpanded && wordCount > 100;
+  const displayedText = shouldTruncate 
+    ? coverLetter.split(/\s+/).slice(0, 100).join(' ') + '...'
+    : coverLetter;
+
   return (
     <div className="space-y-4">
       {!coverLetter ? (
@@ -137,15 +156,9 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
               className="gap-2"
             >
               {isEditing ? (
-                <>
-                  <Save className="h-4 w-4" />
-                  Save
-                </>
+                <Save className="h-4 w-4" />
               ) : (
-                <>
-                  <Edit2 className="h-4 w-4" />
-                  Edit
-                </>
+                <Edit2 className="h-4 w-4" />
               )}
             </Button>
             <Button
@@ -155,19 +168,28 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
               className="gap-2"
             >
               <Download className="h-4 w-4" />
-              Download
             </Button>
           </div>
-          <div className="flex items-center justify-center max-w-2xl mx-auto rounded-lg">
+          <div 
+            className={cn(
+              "relative flex items-center justify-center max-w-2xl mx-auto rounded-lg",
+              shouldTruncate && "cursor-pointer"
+            )}
+            onClick={() => shouldTruncate && setIsExpanded(true)}
+          >
             <Textarea
-              value={coverLetter}
+              ref={textAreaRef}
+              value={displayedText}
               onChange={(e) => {
                 setCoverLetter(e.target.value);
                 if (onCoverLetterChange) {
                   onCoverLetterChange(e.target.value);
                 }
               }}
-              className="min-h-0 h-auto shadow-xl font-serif p-6 text-sm leading-relaxed rounded-5 resize-none"
+              className={cn(
+                "min-h-0 h-auto shadow-xl font-serif p-6 text-sm leading-relaxed rounded-5 resize-none",
+                shouldTruncate && "after:content-[''] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-20 after:bg-gradient-to-t after:from-background after:to-transparent after:pointer-events-none"
+              )}
               readOnly={!isEditing}
               style={{ height: 'auto' }}
             />
