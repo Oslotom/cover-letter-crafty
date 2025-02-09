@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CoverLetterGenerator } from '@/components/CoverLetterGenerator';
@@ -5,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 
 export default function CoverLetter() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
@@ -14,11 +15,14 @@ export default function CoverLetter() {
 
   useEffect(() => {
     const fetchApplication = async () => {
-      if (!id) return;
+      if (!id) {
+        navigate('/dashboard');
+        return;
+      }
 
       const { data, error } = await supabase
         .from('applications')
-        .select('*')
+        .select()
         .eq('id', id)
         .single();
 
@@ -37,7 +41,7 @@ export default function CoverLetter() {
     };
 
     fetchApplication();
-  }, [id]);
+  }, [id, navigate, toast]);
 
   const handleCoverLetterChange = async (newCoverLetter: string) => {
     if (!id) return;
