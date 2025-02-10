@@ -1,6 +1,5 @@
 
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -76,7 +75,7 @@ const JobDetails = () => {
           </Link>
         </div>
 
-        <Card className="p-6 mb-8">
+        <div className="space-y-6 bg-background p-6">
           <div className="flex items-start justify-between mb-6">
             <div>
               <h1 className="text-3xl font-bold text-foreground mb-2">{jobInfo.title}</h1>
@@ -123,7 +122,7 @@ const JobDetails = () => {
               )}
             </div>
           </div>
-        </Card>
+        </div>
       </div>
     </div>
   );
