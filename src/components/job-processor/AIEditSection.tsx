@@ -56,19 +56,19 @@ Provide ONLY the edited cover letter text, without any additional text or format
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t p-4 z-50">
+    <div className="fixed bottom-0 left-0 right-0  p-4 z-50">
       <div className="max-w-4xl mx-auto">
-        <div className="relative flex items-center border border-gray-300 rounded-lg px-3 py-2">
+        <div className="relative bg-background shadow-xl flex items-center border border-gray-300 rounded-lg px-3 py-2">
           <Textarea
             placeholder="Update with AI"
             value={aiPrompt}
             onChange={(e) => onPromptChange(e.target.value)}
-            className="min-h-[40px] max-h-[80px] flex-grow border-none focus:ring-0 focus:outline-none resize-none"
+            className="min-h-[40px] max-h-[60px] text-lg flex-grow border-none focus:ring-0 focus:outline-none resize-none"
           />
           <Button
             size="sm"
             onClick={handleAIEdit}
-            className="absolute right-3 p-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-full hover:opacity-90"
+            className="min-h-[60px] min-w-[60px] shadow-xl absolute right-3 p-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-full hover:opacity-90"
           >
             <Wand2 size={18} />
           </Button>

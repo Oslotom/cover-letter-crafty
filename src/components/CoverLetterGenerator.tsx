@@ -121,15 +121,7 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
           <div className="flex justify-end space-x-2">
            
         
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onDownload}
-              className="gap-2"
-            >
-              <Download className="h-4 w-4" />
-              Download
-            </Button>
+            
           </div>
           <div className="flex items-center justify-center max-w-2xl rounded-xs">
             <Textarea

@@ -27,9 +27,9 @@ export const Header = () => {
   };
 
   const MobileMenu = () => (
-    <div className={`${isMobileMenuOpen ? 'block' : 'hidden'} fixed inset-0 bg-background/95 backdrop-blur-sm z-50`}>
-      <div className="p-4 space-y-4">
-        <div className="flex justify-between items-center">
+    <div className={`${isMobileMenuOpen ? 'block' : 'hidden'} fixed inset-0 bg-background backdrop-blur-sm z-50`}>
+      <div className="p-4 space-y-4 bg-background">
+        <div className="flex justify-end items-center">
           <span className="font-bold">Menu</span>
           <Button 
             variant="ghost" 
@@ -42,7 +42,7 @@ export const Header = () => {
         <nav className="space-y-4">
           <Link
             to="/"
-            className="flex items-center space-x-2 p-2 hover:bg-accent rounded-lg"
+            className="flex justify-end items-center space-x-2 p-2 hover:bg-accent rounded-lg"
             onClick={() => setIsMobileMenuOpen(false)}
           >
             <Home className="h-5 w-5" />
@@ -51,7 +51,7 @@ export const Header = () => {
           {isAuthenticated && (
             <Link
               to="/dashboard"
-              className="flex items-center space-x-2 p-2 hover:bg-accent rounded-lg"
+              className="flex justify-end items-center space-x-2 p-2 hover:bg-accent rounded-lg"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               <LayoutDashboard className="h-5 w-5" />
@@ -60,14 +60,14 @@ export const Header = () => {
           )}
           <Link
             to="/profile"
-            className="flex items-center space-x-2 p-2 hover:bg-accent rounded-lg"
+            className="flex justify-end items-center space-x-2 p-2 hover:bg-accent rounded-lg"
             onClick={() => setIsMobileMenuOpen(false)}
           >
             <User className="h-5 w-5" />
             <span>Profile</span>
           </Link>
         </nav>
-        <div className="pt-4 flex items-center justify-between">
+        <div className="pt-4 justify-end flex items-center justify-end">
           <ModeToggle />
           {!isAuthenticated ? (
             <Link to="/auth">
@@ -93,8 +93,8 @@ export const Header = () => {
   );
 
   return (
-    <header className="sticky top-0 z-50 w-full backdrop-blur-sm bg-background/70 border-b">
-      <div className="container flex h-14 items-center">
+    <header className="sticky top-0 z-50 w-full justfify-end backdrop-blur-sm bg-background/70">
+      <div className="container flex justify-end h-16 items-center">
         {isMobile ? (
           <>
             <Button 
@@ -102,7 +102,7 @@ export const Header = () => {
               size="icon"
               onClick={() => setIsMobileMenuOpen(true)}
             >
-              <Menu className="h-6 w-6" />
+              <Menu className="h-16 w-16 min-w-[32px] min-h-[32px] " />
             </Button>
             <MobileMenu />
           </>
