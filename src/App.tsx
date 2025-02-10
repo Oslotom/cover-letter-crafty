@@ -17,6 +17,7 @@ import JobProcessor from '@/pages/JobProcessor';
 import NotFound from '@/pages/NotFound';
 import Prompt from '@/pages/Prompt';
 import CoverLetter from '@/pages/CoverLetter';
+import Profile from '@/pages/Profile';
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
             <Route path="/job-processor" element={<JobProcessor />} />
             <Route path="/prompt" element={<Prompt />} />
             <Route path="/cover-letter/:id" element={<CoverLetter />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
