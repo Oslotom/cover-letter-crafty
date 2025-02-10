@@ -54,24 +54,34 @@ const Profile = () => {
     }
   };
 
-  const handleResumeContent = async (content: string) => {
+  const handleResumeContent = async (content: string, fileName: string) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return;
+      if (!session?.user) {
+        toast({
+          title: "Authentication Required",
+          description: "Please sign in to upload your resume.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       const { error } = await supabase
         .from('profiles')
-        .update({ resume_content: content })
+        .update({ 
+          resume_content: content,
+          resume_file_name: fileName
+        })
         .eq('id', session.user.id);
 
       if (error) throw error;
 
-      setProfile(prev => ({ ...prev, resume_content: content }));
-      toast({
-        title: "Success",
-        description: "Resume uploaded successfully!",
-      });
-
+      setProfile(prev => ({ 
+        ...prev, 
+        resume_content: content,
+        resume_file_name: fileName
+      }));
+      
       // Refresh profile data
       fetchProfile();
     } catch (error) {
@@ -116,10 +126,10 @@ const Profile = () => {
                   Upload your resume to use for generating cover letters
                 </p>
               </div>
-              {profile?.resume_content && (
+              {profile?.resume_content && profile?.resume_file_name && (
                 <div className="flex items-center text-muted-foreground">
                   <FileText className="w-4 h-4 mr-2" />
-                  <span>Resume uploaded</span>
+                  <span>{profile.resume_file_name}</span>
                 </div>
               )}
             </div>
