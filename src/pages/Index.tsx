@@ -50,7 +50,7 @@ const Index = () => {
         {/* Tekstseksjon */}
         <div className="md:w-1/2 space-y-4">
           <h1 className="text-5xl font-bold text-gray-900 dark:text-white">
-            Self-service, simplified
+            Self-service, simplified.
           </h1>
           <p className=" text-lg text-gray-600 dark:text-gray-300">
             Fast,, accurate customer support doesn’t happen on its own. Our AI-powered knowledge base
