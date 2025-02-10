@@ -33,10 +33,21 @@ const JobDetails = () => {
 
   const handleGenerateCoverLetter = async () => {
     try {
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session?.user) {
+        toast({
+          title: "Authentication Required",
+          description: "Please sign in to generate a cover letter.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { data: profile } = await supabase
         .from('profiles')
         .select('resume_content')
-        .single();
+        .eq('id', session.session.user.id)
+        .maybeSingle();
 
       if (!profile?.resume_content) {
         toast({
@@ -56,6 +67,7 @@ const JobDetails = () => {
         }
       });
     } catch (error) {
+      console.error('Error fetching resume:', error);
       toast({
         title: "Error",
         description: "Failed to fetch resume. Please try again.",
