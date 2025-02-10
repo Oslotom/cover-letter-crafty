@@ -57,20 +57,18 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background dark:bg-gradient-to-b dark:from-[#1a242f] dark:to-[#222f3a]">
-      <div className="container max-w-5xl mx-auto space-y-8 pt-12 p-4">
-        <div className="text-center space-y-4">
+      <div className="container max-w-2xl mx-auto space-y-8 pt-12 p-4">
+        <div className="text-left space-y-4">
           <h1 className="text-4xl font-bold">
             <span className="span-gradient-text">Your Applications</span>
           </h1>
         </div>
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
           <Card>
             <CardContent className="flex items-center p-6">
-              <div className="p-2 bg-primary/10 rounded-full mr-4">
-                <FileText className="h-6 w-6 text-primary" />
-              </div>
+         
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Total Applications</p>
                 <h3 className="text-2xl font-bold">{stats.total}</h3>
@@ -79,9 +77,7 @@ export default function Dashboard() {
           </Card>
           <Card>
             <CardContent className="flex items-center p-6">
-              <div className="p-2 bg-primary/10 rounded-full mr-4">
-                <Calendar className="h-6 w-6 text-primary" />
-              </div>
+       
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Last 20 Days</p>
                 <h3 className="text-2xl font-bold">{stats.recent}</h3>
