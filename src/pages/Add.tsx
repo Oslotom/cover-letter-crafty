@@ -22,16 +22,18 @@ export default function Add() {
   const extractJobInfo = async (content: string) => {
     try {
       const hf = new HfInference("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");
-      const prompt = `Extract the following information from the job posting:
-- Position Title: \${info.title}
-- Company: \${info.company}
-- Apply Deadline: \${info.deadline}
-
-Return the information in JSON format.
+      const prompt = `Extract the following information from the job posting and return it in this exact JSON format:
+{
+  "title": "Job Title Here",
+  "company": "Company Name Here",
+  "deadline": "Application Deadline Here"
+}
 
 Job posting:
 ${content}`;
 
+      console.log('Sending prompt to HF:', prompt);
+      
       const response = await hf.textGeneration({
         model: 'mistralai/Mistral-7B-Instruct-v0.2',
         inputs: prompt,
@@ -42,17 +44,28 @@ ${content}`;
         }
       });
 
-      try {
-        const jsonString = response.generated_text.replace(/```json\n?|\n?```/g, '').trim();
-        const jobInfo = JSON.parse(jsonString);
-        return jobInfo;
-      } catch (error) {
-        console.error('Error parsing JSON:', error);
-        throw new Error('Failed to parse job information');
+      console.log('Raw HF response:', response.generated_text);
+
+      // Try to find JSON in the response using regex
+      const jsonMatch = response.generated_text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('No JSON found in response');
       }
+
+      const jsonString = jsonMatch[0];
+      console.log('Extracted JSON string:', jsonString);
+
+      const jobInfo = JSON.parse(jsonString);
+
+      // Validate the job info structure
+      if (!jobInfo.title || !jobInfo.company) {
+        throw new Error('Invalid job info structure');
+      }
+
+      return jobInfo;
     } catch (error) {
       console.error('Error extracting job info:', error);
-      throw error;
+      throw new Error(`Failed to extract job information: ${error.message}`);
     }
   };
 
@@ -62,9 +75,14 @@ ${content}`;
     setIsLoading(true);
     try {
       const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
-      const data = await response.json();
+      if (!response.ok) {
+        throw new Error('Failed to fetch URL');
+      }
       
-      if (!data.contents) throw new Error('Failed to fetch URL content');
+      const data = await response.json();
+      if (!data.contents) {
+        throw new Error('No content found in URL response');
+      }
       
       const doc = new DOMParser().parseFromString(data.contents, 'text/html');
       const scripts = doc.getElementsByTagName('script');
@@ -74,9 +92,15 @@ ${content}`;
       const textContent = doc.body.textContent || '';
       const cleanText = textContent.replace(/\s+/g, ' ').trim();
       
-      const jobInfo = await extractJobInfo(cleanText);
+      if (!cleanText) {
+        throw new Error('No text content found in webpage');
+      }
+
+      console.log('Clean text content:', cleanText.substring(0, 500) + '...');
       
-      // Navigate to job details page with extracted information
+      const jobInfo = await extractJobInfo(cleanText);
+      console.log('Extracted job info:', jobInfo);
+      
       navigate('/job-details', { 
         state: { 
           jobContent: cleanText,
@@ -89,7 +113,7 @@ ${content}`;
       console.error('Error loading job:', error);
       toast({
         title: "Error",
-        description: "Failed to load job posting",
+        description: error.message || "Failed to load job posting",
         variant: "destructive",
       });
     } finally {
