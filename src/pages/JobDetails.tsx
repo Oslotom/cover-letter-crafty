@@ -1,9 +1,10 @@
 
-import { useLocation, Link } from 'react-router-dom';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Link as LinkIcon, ExternalLink, Info } from "lucide-react";
+import { FileText, ExternalLink } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface JobInfo {
   title: string;
@@ -19,6 +20,8 @@ interface LocationState {
 
 const JobDetails = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const { jobContent, jobInfo, sourceUrl } = (location.state as LocationState) || { 
     jobContent: '', 
     jobInfo: { 
@@ -29,51 +32,37 @@ const JobDetails = () => {
     sourceUrl: ''
   };
 
-  // Extract key information from job content
-  const getKeyDetails = () => {
-    const details = [
-      { label: "Position", value: jobInfo.title },
-      { label: "Company", value: jobInfo.company },
-      { label: "Application Deadline", value: jobInfo.deadline },
-      { label: "Experience Level", value: extractExperience() },
-      { label: "Employment Type", value: extractEmploymentType() },
-      { label: "Location", value: extractLocation() },
-      { label: "Skills Required", value: extractSkills() },
-    ];
-    return details;
-  };
+  const handleGenerateCoverLetter = async () => {
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('resume_content')
+        .single();
 
-  const extractExperience = () => {
-    const experienceMatch = jobContent.match(/(\d+[-\s]?\d*\+?\s*(?:year|yr)s?)/i);
-    return experienceMatch ? experienceMatch[0] : "Not specified";
-  };
-
-  const extractEmploymentType = () => {
-    const types = ["Full-time", "Part-time", "Contract", "Freelance", "Remote"];
-    for (const type of types) {
-      if (jobContent.toLowerCase().includes(type.toLowerCase())) {
-        return type;
+      if (!profile?.resume_content) {
+        toast({
+          title: "No Resume Found",
+          description: "Please upload your resume in the Profile page first.",
+          variant: "destructive",
+        });
+        return;
       }
+
+      navigate('/job-processor', { 
+        state: { 
+          jobContent,
+          sourceUrl,
+          cvContent: profile.resume_content,
+          shouldGenerateOnMount: true
+        }
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch resume. Please try again.",
+        variant: "destructive",
+      });
     }
-    return "Not specified";
-  };
-
-  const extractLocation = () => {
-    const locationMatch = jobContent.match(/(?:located in|location:|based in)\s+([^\.]+)/i);
-    return locationMatch ? locationMatch[1].trim() : "Not specified";
-  };
-
-  const extractSkills = () => {
-    const commonSkills = [
-      "JavaScript", "Python", "Java", "React", "Angular", "Vue", "Node.js",
-      "SQL", "AWS", "Docker", "Kubernetes", "Git", "Agile", "Scrum"
-    ];
-    
-    const foundSkills = commonSkills.filter(skill => 
-      jobContent.toLowerCase().includes(skill.toLowerCase())
-    );
-    
-    return foundSkills.length > 0 ? foundSkills.join(", ") : "Not specified";
   };
 
   return (
@@ -92,7 +81,6 @@ const JobDetails = () => {
             <div>
               <h1 className="text-3xl font-bold text-foreground mb-2">{jobInfo.title}</h1>
               <div className="flex items-center text-muted-foreground">
-                <Info className="w-4 h-4 mr-2" />
                 <span>{jobInfo.company}</span>
               </div>
             </div>
@@ -110,43 +98,20 @@ const JobDetails = () => {
           </div>
 
           <div className="space-y-6">
-            <div>
-              <h2 className="text-xl font-semibold text-foreground mb-4">Key Details</h2>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Details</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {getKeyDetails().map((detail, index) => (
-                    <TableRow key={index}>
-                      <TableCell className="font-medium">
-                        {detail.label}
-                      </TableCell>
-                      <TableCell>
-                        {detail.value}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+            <div className="whitespace-pre-wrap text-foreground">
+              {jobContent}
             </div>
 
-            <div>
-              <h2 className="text-xl font-semibold text-foreground mb-4">Full Description</h2>
-              <Card className="p-4 bg-card/50">
-                <div className="prose prose-neutral dark:prose-invert max-w-none">
-                  <div className="text-foreground whitespace-pre-wrap">
-                    {jobContent}
-                  </div>
-                </div>
-              </Card>
-            </div>
+            <div className="flex justify-between items-center pt-6">
+              <Button
+                onClick={handleGenerateCoverLetter}
+                className="bg-gradient-to-r from-purple-500 to-pink-600 hover:opacity-90"
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                Write Cover Letter
+              </Button>
 
-            {sourceUrl && (
-              <div className="flex justify-end">
+              {sourceUrl && (
                 <Button
                   variant="outline"
                   onClick={() => window.open(sourceUrl, '_blank')}
@@ -155,8 +120,8 @@ const JobDetails = () => {
                   <ExternalLink className="w-4 h-4" />
                   View Original Post
                 </Button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </Card>
       </div>
