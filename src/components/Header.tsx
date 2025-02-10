@@ -4,7 +4,7 @@ import { ModeToggle } from "@/components/ModeToggle";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Menu, X, Home, User, LayoutDashboard } from "lucide-react";
+import { Menu, X, Home, User, LayoutDashboard, Plus } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export const Header = () => {
@@ -49,14 +49,24 @@ export const Header = () => {
             <span>Home</span>
           </Link>
           {isAuthenticated && (
-            <Link
-              to="/dashboard"
-              className="flex justify-end items-center space-x-2 p-2 hover:bg-accent rounded-lg"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <LayoutDashboard className="h-5 w-5" />
-              <span>Dashboard</span>
-            </Link>
+            <>
+              <Link
+                to="/dashboard"
+                className="flex justify-end items-center space-x-2 p-2 hover:bg-accent rounded-lg"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <LayoutDashboard className="h-5 w-5" />
+                <span>Dashboard</span>
+              </Link>
+              <Link
+                to="/add"
+                className="flex justify-end items-center space-x-2 p-2 hover:bg-accent rounded-lg"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Plus className="h-5 w-5" />
+                <span>Add Job</span>
+              </Link>
+            </>
           )}
           <Link
             to="/profile"
@@ -118,12 +128,20 @@ export const Header = () => {
               Home
             </Link>
             {isAuthenticated && (
-              <Link
-                to="/dashboard"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Dashboard
-              </Link>
+              <>
+                <Link
+                  to="/dashboard"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  to="/add"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Add Job
+                </Link>
+              </>
             )}
             <Link
               to="/profile"
