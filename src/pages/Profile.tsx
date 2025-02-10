@@ -1,11 +1,10 @@
-
 import { useEffect, useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { FileUpload } from '@/components/FileUpload';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, User, Trash2, Loader2, Calendar, Download, RefreshCw, Upload } from "lucide-react";
+import { FileText, User, Trash2, Loader2, Calendar, Download, RefreshCw } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -109,29 +108,22 @@ const Profile = () => {
         })
         .eq('id', session.user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating profile:', error);
+        throw error;
+      }
 
-      setProfile(prev => ({ 
-        ...prev, 
-        resume_content: content,
-        resume_file_name: fileName,
-        resume_file_url: fileUrl,
-        upload_date: new Date().toISOString(),
-        file_size: fileSize
-      }));
-      
+      // Fetch updated profile data
+      await fetchProfile();
       setShowUpload(false);
-      toast({
-        title: "Success",
-        description: "Resume uploaded successfully!",
-      });
     } catch (error) {
       console.error('Error updating resume:', error);
       toast({
         title: "Error",
-        description: "Failed to update resume.",
+        description: "Failed to update resume. Please try again.",
         variant: "destructive",
       });
+      throw error; // Re-throw to be caught by FileUpload component
     } finally {
       setIsUploading(false);
     }
@@ -164,16 +156,10 @@ const Profile = () => {
 
       if (updateError) throw updateError;
 
-      setProfile(prev => ({
-        ...prev,
-        resume_content: null,
-        resume_file_name: null,
-        resume_file_url: null,
-        upload_date: null,
-        file_size: null
-      }));
-
+      // Fetch updated profile data instead of updating state directly
+      await fetchProfile();
       setShowUpload(true);
+      
       toast({
         title: "Success",
         description: "Resume deleted successfully.",

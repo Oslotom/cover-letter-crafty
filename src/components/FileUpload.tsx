@@ -12,13 +12,13 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 ).toString();
 
 interface FileUploadProps {
-  onFileContent: (content: string, fileName: string, fileUrl: string) => void;
+  onFileContent: (content: string, fileName: string, fileUrl: string) => Promise<void>;
   contentType: 'cv' | 'job';
   showSuccessInButton?: boolean;
   isUploading?: boolean;
 }
 
-export const FileUpload = ({ onFileContent, contentType, showSuccessInButton, isUploading }: FileUploadProps) => {
+export const FileUpload = ({ onFileContent, contentType, showSuccessInButton, isUploading: parentIsUploading }: FileUploadProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const { toast } = useToast();
@@ -72,6 +72,8 @@ export const FileUpload = ({ onFileContent, contentType, showSuccessInButton, is
     }
 
     setIsLoading(true);
+    setIsSuccess(false);
+    
     try {
       let content: string;
       
@@ -95,7 +97,9 @@ export const FileUpload = ({ onFileContent, contentType, showSuccessInButton, is
         .from('pdfs')
         .getPublicUrl(fileName);
 
-      onFileContent(content, file.name, publicUrl);
+      // Wait for the parent component to complete the database update
+      await onFileContent(content, fileName, publicUrl);
+      
       setIsSuccess(true);
       toast({
         title: "Success",
@@ -104,6 +108,7 @@ export const FileUpload = ({ onFileContent, contentType, showSuccessInButton, is
       
     } catch (error) {
       console.error('Error processing file:', error);
+      setIsSuccess(false);
       toast({
         title: "Error",
         description: "Failed to process the file. Please try again.",
@@ -114,7 +119,7 @@ export const FileUpload = ({ onFileContent, contentType, showSuccessInButton, is
     }
   };
 
-  const uploadState = isLoading || isUploading;
+  const uploadState = isLoading || parentIsUploading;
 
   return (
     <div className="flex flex-col space-y-4">
