@@ -20,6 +20,8 @@ export type Database = {
           job_description: string | null
           job_title: string | null
           job_url: string | null
+          resume_file_name: string | null
+          resume_file_url: string | null
           status: Database["public"]["Enums"]["application_status"] | null
           user_id: string | null
         }
@@ -33,6 +35,8 @@ export type Database = {
           job_description?: string | null
           job_title?: string | null
           job_url?: string | null
+          resume_file_name?: string | null
+          resume_file_url?: string | null
           status?: Database["public"]["Enums"]["application_status"] | null
           user_id?: string | null
         }
@@ -46,6 +50,8 @@ export type Database = {
           job_description?: string | null
           job_title?: string | null
           job_url?: string | null
+          resume_file_name?: string | null
+          resume_file_url?: string | null
           status?: Database["public"]["Enums"]["application_status"] | null
           user_id?: string | null
         }

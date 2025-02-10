@@ -4,7 +4,6 @@ import { Tables } from '@/integrations/supabase/types';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit2, Save } from "lucide-react";
-import { ApplicationStatusSelect } from './ApplicationStatusSelect';
 import { useNavigate } from 'react-router-dom';
 import { Input } from "@/components/ui/input";
 import { supabase } from '@/integrations/supabase/client';
@@ -14,6 +13,8 @@ interface ApplicationsTableProps {
   applications: Tables<'applications'>[];
   onStatusChange: () => void;
 }
+
+type ApplicationStatus = "Wishlist" | "Applied" | "Interview" | "Offer" | "Rejected";
 
 export const ApplicationsTable = ({ 
   applications,
@@ -54,6 +55,24 @@ export const ApplicationsTable = ({
     }
   };
 
+  const handleStatusChange = async (id: string, newStatus: ApplicationStatus) => {
+    const { error } = await supabase
+      .from('applications')
+      .update({ status: newStatus })
+      .eq('id', id);
+
+    if (error) {
+      toast({
+        title: "Error updating status",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    onStatusChange();
+  };
+
   const handleRowClick = (applicationId: string) => {
     if (!editingId) {
       navigate(`/cover-letter/${applicationId}`);
@@ -64,18 +83,19 @@ export const ApplicationsTable = ({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="border-none w-3/4 ">Job Title</TableHead>
-          <TableHead>Actions</TableHead>
+          <TableHead className="w-[60%]">Job Title</TableHead>
+          <TableHead className="w-[20%]">Status</TableHead>
+          <TableHead className="w-[20%]">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {applications.map((app) => (
           <TableRow 
             key={app.id} 
-            className="border-none cursor-pointer "
+            className="h-14 cursor-pointer hover:bg-accent/50"
             onClick={() => handleRowClick(app.id)}
           >
-            <TableCell className="py-4 ">
+            <TableCell>
               {editingId === app.id ? (
                 <Input
                   value={editedTitle}
@@ -87,10 +107,26 @@ export const ApplicationsTable = ({
                 app.job_title
               )}
             </TableCell>
-    
-            <TableCell onClick={(e) => e.stopPropagation()}>
+            <TableCell>
+              <select
+                value={app.status || 'Wishlist'}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  handleStatusChange(app.id, e.target.value as ApplicationStatus);
+                }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-transparent focus:outline-none cursor-pointer"
+              >
+                <option value="Wishlist">Wishlist</option>
+                <option value="Applied">Applied</option>
+                <option value="Interview">Interview</option>
+                <option value="Offer">Offer</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+            </TableCell>
+            <TableCell>
               <Button
-                variant="secondary"
+                variant="ghost"
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -100,18 +136,12 @@ export const ApplicationsTable = ({
                     handleEditTitle(app);
                   }
                 }}
-                className="gap-2 bg-transparent"
+                className="h-8 w-8 p-0"
               >
                 {editingId === app.id ? (
-                  <>
-                    <Save className="h-3 w-3" />
-                  
-                  </>
+                  <Save className="h-4 w-4" />
                 ) : (
-                  <>
-                    <Edit2 className="h-3 w-3" />
-                  
-                  </>
+                  <Edit2 className="h-4 w-4" />
                 )}
               </Button>
             </TableCell>
