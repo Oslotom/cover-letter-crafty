@@ -53,7 +53,7 @@ const Index = () => {
             Self-service, simplified
           </h1>
           <p className=" text-lg text-gray-600 dark:text-gray-300">
-            Fast, accurate customer support doesn’t happen on its own. Our AI-powered knowledge base
+            Fast,, accurate customer support doesn’t happen on its own. Our AI-powered knowledge base
             helps customers find answers quickly, reducing support tickets.
           </p>
         
