@@ -93,24 +93,30 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          file_size: number | null
           id: string
           resume_content: string | null
           resume_file_name: string | null
           resume_file_url: string | null
+          upload_date: string | null
         }
         Insert: {
           created_at?: string
+          file_size?: number | null
           id: string
           resume_content?: string | null
           resume_file_name?: string | null
           resume_file_url?: string | null
+          upload_date?: string | null
         }
         Update: {
           created_at?: string
+          file_size?: number | null
           id?: string
           resume_content?: string | null
           resume_file_name?: string | null
           resume_file_url?: string | null
+          upload_date?: string | null
         }
         Relationships: []
       }

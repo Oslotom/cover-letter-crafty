@@ -5,7 +5,7 @@ import { FileUpload } from '@/components/FileUpload';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, User, Trash2, Loader2 } from "lucide-react";
+import { FileText, User, Trash2, Loader2, Calendar, Download, RefreshCw, Upload } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +22,8 @@ interface ProfileData {
   resume_content?: string | null;
   resume_file_name?: string | null;
   resume_file_url?: string | null;
+  upload_date?: string | null;
+  file_size?: number | null;
 }
 
 const Profile = () => {
@@ -29,6 +31,7 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -50,12 +53,13 @@ const Profile = () => {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('resume_content, resume_file_name, resume_file_url')
+        .select('resume_content, resume_file_name, resume_file_url, upload_date, file_size')
         .eq('id', session.user.id)
         .maybeSingle();
 
       if (error) throw error;
       setProfile(data);
+      setShowUpload(!data?.resume_file_name);
     } catch (error) {
       console.error('Error fetching profile:', error);
       toast({
@@ -81,6 +85,11 @@ const Profile = () => {
         return;
       }
 
+      // Get file size from URL
+      const response = await fetch(fileUrl);
+      const blob = await response.blob();
+      const fileSize = blob.size;
+
       // If there's an existing resume, delete it from storage
       if (profile?.resume_file_name) {
         const oldFileName = `${profile.resume_file_name}`;
@@ -94,7 +103,9 @@ const Profile = () => {
         .update({ 
           resume_content: content,
           resume_file_name: fileName,
-          resume_file_url: fileUrl
+          resume_file_url: fileUrl,
+          upload_date: new Date().toISOString(),
+          file_size: fileSize
         })
         .eq('id', session.user.id);
 
@@ -104,10 +115,16 @@ const Profile = () => {
         ...prev, 
         resume_content: content,
         resume_file_name: fileName,
-        resume_file_url: fileUrl
+        resume_file_url: fileUrl,
+        upload_date: new Date().toISOString(),
+        file_size: fileSize
       }));
       
-      await fetchProfile();
+      setShowUpload(false);
+      toast({
+        title: "Success",
+        description: "Resume uploaded successfully!",
+      });
     } catch (error) {
       console.error('Error updating resume:', error);
       toast({
@@ -139,7 +156,9 @@ const Profile = () => {
         .update({ 
           resume_content: null,
           resume_file_name: null,
-          resume_file_url: null
+          resume_file_url: null,
+          upload_date: null,
+          file_size: null
         })
         .eq('id', session.user.id);
 
@@ -149,9 +168,12 @@ const Profile = () => {
         ...prev,
         resume_content: null,
         resume_file_name: null,
-        resume_file_url: null
+        resume_file_url: null,
+        upload_date: null,
+        file_size: null
       }));
 
+      setShowUpload(true);
       toast({
         title: "Success",
         description: "Resume deleted successfully.",
@@ -166,6 +188,29 @@ const Profile = () => {
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const formatFileSize = (bytes: number | null | undefined) => {
+    if (!bytes) return 'N/A';
+    const units = ['B', 'KB', 'MB', 'GB'];
+    let size = bytes;
+    let unitIndex = 0;
+    while (size >= 1024 && unitIndex < units.length - 1) {
+      size /= 1024;
+      unitIndex++;
+    }
+    return `${size.toFixed(1)} ${units[unitIndex]}`;
+  };
+
+  const formatDate = (date: string | null | undefined) => {
+    if (!date) return 'N/A';
+    return new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   if (isLoading) {
@@ -200,61 +245,99 @@ const Profile = () => {
                   Upload your resume to use for generating cover letters
                 </p>
               </div>
-              {profile?.resume_file_name && (
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center text-muted-foreground">
-                    <FileText className="w-4 h-4 mr-2" />
-                    <span>{profile.resume_file_name}</span>
-                  </div>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
+            </div>
+
+            {profile?.resume_file_name && !showUpload ? (
+              <div className="space-y-6">
+                {/* Resume Details */}
+                <div className="bg-muted/30 rounded-lg p-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <FileText className="h-8 w-8 text-primary" />
+                      <div>
+                        <h3 className="font-medium">{profile.resume_file_name}</h3>
+                        <div className="flex items-center space-x-4 text-sm text-muted-foreground mt-1">
+                          <span className="flex items-center">
+                            <Calendar className="w-4 h-4 mr-1" />
+                            {formatDate(profile.upload_date)}
+                          </span>
+                          <span>{formatFileSize(profile.file_size)}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      {profile.resume_file_url && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.open(profile.resume_file_url, '_blank')}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Download
+                        </Button>
+                      )}
                       <Button
-                        variant="destructive"
-                        size="icon"
-                        className="h-8 w-8"
-                        disabled={isDeleting}
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowUpload(true)}
                       >
-                        {isDeleting ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-4 w-4" />
-                        )}
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        Replace
                       </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Resume</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to delete your resume? This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteResume}>Delete</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            disabled={isDeleting}
+                          >
+                            {isDeleting ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <>
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete
+                              </>
+                            )}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Resume</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete your resume? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleDeleteResume}>Delete</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
+
+                  {/* Resume Preview */}
+                  {profile.resume_content && (
+                    <Card className="p-4 bg-muted/50">
+                      <h3 className="font-medium mb-2">Resume Preview</h3>
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap max-h-48 overflow-y-auto">
+                        {profile.resume_content.slice(0, 500)}...
+                      </p>
+                    </Card>
+                  )}
                 </div>
-              )}
-            </div>
-
-            <div className="space-y-4">
-              <FileUpload
-                onFileContent={handleResumeContent}
-                contentType="cv"
-                showSuccessInButton={true}
-                isUploading={isUploading}
-              />
-
-              {profile?.resume_content && (
-                <Card className="p-4 bg-muted/50">
-                  <h3 className="font-medium mb-2">Resume Preview</h3>
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap max-h-48 overflow-y-auto">
-                    {profile.resume_content.slice(0, 500)}...
-                  </p>
-                </Card>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <FileUpload
+                  onFileContent={handleResumeContent}
+                  contentType="cv"
+                  showSuccessInButton={true}
+                  isUploading={isUploading}
+                />
+              </div>
+            )}
           </Card>
         </div>
       </div>
