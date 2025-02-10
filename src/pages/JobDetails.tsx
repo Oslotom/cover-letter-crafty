@@ -1,7 +1,7 @@
 
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { FileText, ExternalLink } from "lucide-react";
+import { FileText, ExternalLink, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -51,10 +51,20 @@ const JobDetails = () => {
 
       if (!profile?.resume_content) {
         toast({
-          title: "No Resume Found",
-          description: "Please upload your resume in the Profile page first.",
+          title: "Resume Required",
+          description: "Please upload your resume in your profile first.",
           variant: "destructive",
         });
+        
+        // Add a delay before navigation to ensure the toast is visible
+        setTimeout(() => {
+          navigate('/profile', { 
+            state: { 
+              returnTo: '/job-details',
+              returnState: location.state
+            }
+          });
+        }, 1500);
         return;
       }
 
