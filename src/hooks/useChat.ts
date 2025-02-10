@@ -1,6 +1,7 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { Message, chatService } from '@/services/chatService';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -55,7 +56,7 @@ export const useChat = () => {
     }
   };
 
-  const handleFileContent = (content: string) => {
+  const handleFileContent = async (content: string, fileName: string, fileUrl: string): Promise<void> => {
     setCvContent(content);
   };
 
