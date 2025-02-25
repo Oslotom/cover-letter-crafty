@@ -3,41 +3,30 @@ import { FileUpload } from '@/components/FileUpload';
 import { UrlInput } from '@/components/UrlInput';
 import { Briefcase, FileText, Sparkles } from "lucide-react";
 import React from 'react';
-
-
 const Index = () => {
   const [cvContent, setCvContent] = useState('');
   const [jobContent, setJobContent] = useState('');
-
-  const features = [
-    {
-      icon: Briefcase,
-      title: "Smart Job Analysis",
-      description: "Automatically extracts and analyzes job descriptions from URLs to understand key requirements and responsibilities."
-    },
-    {
-      icon: FileText,
-      title: "LinkedIn Integration",
-      description: "Connect your LinkedIn profile or upload your resume to generate personalized cover letters based on your experience."
-    },
-    {
-      icon: Sparkles,
-      title: "AI-Powered Writing",
-      description: "Uses advanced AI to create tailored cover letters that match your experience with job requirements."
-    }
-  ];
-  
-  return (
-    <div className="min-h-screen py-8 bg-background dark:bg-gradient-to-b dark:from-[#1a242f] dark:to-[#222f3a]">
+  const features = [{
+    icon: Briefcase,
+    title: "Smart Job Analysis",
+    description: "Automatically extracts and analyzes job descriptions from URLs to understand key requirements and responsibilities."
+  }, {
+    icon: FileText,
+    title: "LinkedIn Integration",
+    description: "Connect your LinkedIn profile or upload your resume to generate personalized cover letters based on your experience."
+  }, {
+    icon: Sparkles,
+    title: "AI-Powered Writing",
+    description: "Uses advanced AI to create tailored cover letters that match your experience with job requirements."
+  }];
+  return <div className="min-h-screen py-8 bg-background dark:bg-gradient-to-b dark:from-[#1a242f] dark:to-[#222f3a]">
       <div className="container max-w-2xl mx-auto space-y-2 pt-6 p-4">
         <div className="text-center space-y-4">
           <h1 className="text-6xl">
             <span className=" font-bold">Create free cover letter with AI </span>
           </h1>       
           
-          <p className="text-foreground dark:text-white p-6 text-xl">
-            Add the the job description link and upload your resume.. No fuss, totally free. No login. 
-          </p>
+          <p className="text-foreground dark:text-white p-6 text-xl">Add the the job description link and upload your resume.. No fuss, totally free. No login</p>
         </div>
         
         <div className="max-w-4xl mx-auto">
@@ -61,21 +50,13 @@ const Index = () => {
 
         {/* Bilde-seksjon */}
         <div className="md:w-1/2">
-          <img 
-            src="/bilde1.png"  // Oppdater med riktig bilde-URL
-            alt="Knowledge Base UI"
-            className="w-full"
-          />
+          <img src="/bilde1.png" // Oppdater med riktig bilde-URL
+            alt="Knowledge Base UI" className="w-full" />
         </div>
       </div>
     </div>
       </div>
       
-    </div>
-    
-  );
- 
+    </div>;
 };
-
-
 export default Index;
