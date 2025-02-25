@@ -9,7 +9,6 @@ interface JobInfo {
   title: string;
   company: string;
   deadline: string;
-  description?: string; // Added description field
 }
 
 interface LocationState {
@@ -27,8 +26,7 @@ const JobDetails = () => {
     jobInfo: { 
       title: 'Job Position',
       company: 'Company',
-      deadline: 'Not specified',
-      description: ''
+      deadline: 'Not specified'
     },
     sourceUrl: ''
   };
@@ -58,6 +56,7 @@ const JobDetails = () => {
           variant: "destructive",
         });
         
+        // Add a delay before navigation to ensure the toast is visible
         setTimeout(() => {
           navigate('/profile', { 
             state: { 
@@ -121,7 +120,7 @@ const JobDetails = () => {
 
           <div className="space-y-6">
             <div className="whitespace-pre-wrap text-foreground">
-              {jobInfo.description || jobContent}
+              {jobInfo.summary}
             </div>
 
             <div className="flex justify-between items-center pt-6">
@@ -152,4 +151,3 @@ const JobDetails = () => {
 };
 
 export default JobDetails;
-
