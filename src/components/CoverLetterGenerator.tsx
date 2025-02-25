@@ -3,7 +3,6 @@ import { HfInference } from '@huggingface/inference';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Download, Edit2, Save } from "lucide-react";
-
 interface CoverLetterGeneratorProps {
   cvContent: string;
   jobContent: string;
@@ -14,10 +13,9 @@ interface CoverLetterGeneratorProps {
   currentCoverLetter?: string;
   onCoverLetterChange?: (text: string) => void;
 }
-
-export const CoverLetterGenerator = ({ 
-  cvContent, 
-  jobContent, 
+export const CoverLetterGenerator = ({
+  cvContent,
+  jobContent,
   isEditing,
   onEdit,
   onDownload,
@@ -27,26 +25,19 @@ export const CoverLetterGenerator = ({
 }: CoverLetterGeneratorProps) => {
   const [coverLetter, setCoverLetter] = useState(currentCoverLetter || '');
   const [isGenerating, setIsGenerating] = useState(false);
-
-
   const truncateText = (text: string, maxLength: number = 10000): string => {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
   };
-
   const generateCoverLetter = async () => {
     if (!cvContent || !jobContent) {
-    
       return;
     }
-
     setIsGenerating(true);
     try {
       const hf = new HfInference("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");
-      
       const truncatedCV = truncateText(cvContent);
       const truncatedJob = truncateText(jobContent);
-      
       const finalPrompt = `Generate a professional cover letter based on the CV and job description below. The cover letter should highlight relevant experience and skills from the CV that match the job requirements. Keep it very short. Keep it concise and professional, max 280 words.
 
 Resume Content:
@@ -56,7 +47,6 @@ Job Description:
 ${truncatedJob}
 
 Generate ONLY the cover letter body text, without any salutations, signatures, or formatting. Focus on making compelling connections between the candidate's experience and the job requirements.`;
-
       const response = await hf.textGeneration({
         model: 'mistralai/Mistral-7B-Instruct-v0.3',
         inputs: finalPrompt,
@@ -66,57 +56,37 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
           top_p: 0.9,
           repetition_penalty: 1.2,
           return_full_text: false
-        },
+        }
       });
-
       let generatedText = response.generated_text.trim();
-      generatedText = generatedText
-        .replace(/^(Dear|To Whom|Hiring|RE:|Resume Content:|Job Description:).*/im, '')
-        .replace(/Sincerely,?.*$/im, '')
-        .replace(/Best regards,?.*$/im, '')
-        .replace(/Yours.*$/im, '')
-        .trim();
-
+      generatedText = generatedText.replace(/^(Dear|To Whom|Hiring|RE:|Resume Content:|Job Description:).*/im, '').replace(/Sincerely,?.*$/im, '').replace(/Best regards,?.*$/im, '').replace(/Yours.*$/im, '').trim();
       setCoverLetter(generatedText);
       if (onCoverLetterChange) {
         onCoverLetterChange(generatedText);
       }
-
-
-
     } catch (error) {
       console.error('Error generating cover letter:', error);
-     
     } finally {
       setIsGenerating(false);
     }
   };
-
   useEffect(() => {
     if (autoGenerate && !coverLetter && !isGenerating) {
       generateCoverLetter();
     }
   }, [autoGenerate, cvContent, jobContent]);
-
   useEffect(() => {
     if (currentCoverLetter && currentCoverLetter !== coverLetter) {
       setCoverLetter(currentCoverLetter);
     }
   }, [currentCoverLetter]);
-
-  return (
-    <div className="space-y-4">
-      {!coverLetter ? (
-        <div className="flex items-center justify-center min-h-[60px]">
-          {isGenerating && (
-            <div className="flex items-center gap-2">
+  return <div className="space-y-4">
+      {!coverLetter ? <div className="flex items-center justify-center min-h-[60px]">
+          {isGenerating && <div className="flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span>Generating cover letter...</span>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="space-y-4 max-w-2xl mx-auto">
+            </div>}
+        </div> : <div className="space-y-4 max-w-2xl mx-auto">
           
           <div className="flex justify-end space-x-2">
            
@@ -124,21 +94,15 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
             
           </div>
           <div className="flex items-center justify-center max-w-2xl rounded-xs">
-            <Textarea
-              value={coverLetter}
-              onChange={(e) => {
-                setCoverLetter(e.target.value);
-                if (onCoverLetterChange) {
-                  onCoverLetterChange(e.target.value);
-                }
-              }}
-              className="min-h-screen font-serif p-6 leading-relaxed rounded-1 resize-none"
-              readOnly={!isEditing}
-              style={{ height: 'auto' }}
-            />
+            <Textarea value={coverLetter} onChange={e => {
+          setCoverLetter(e.target.value);
+          if (onCoverLetterChange) {
+            onCoverLetterChange(e.target.value);
+          }
+        }} readOnly={!isEditing} style={{
+          height: 'auto'
+        }} className="min-h-screen font-serif p-6 leading-relaxed rounded-1 resize-none px-[18px]" />
           </div>
-        </div>
-      )}
-    </div>
-  );
+        </div>}
+    </div>;
 };
