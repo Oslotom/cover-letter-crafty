@@ -132,7 +132,7 @@ Generate ONLY the cover letter body text, without any salutations, signatures, o
                   onCoverLetterChange(e.target.value);
                 }
               }}
-              className="min-h-screen font-serif p-6 text-sm leading-relaxed rounded-1 resize-none"
+              className="min-h-screen font-serif p-6 leading-relaxed rounded-1 resize-none"
               readOnly={!isEditing}
               style={{ height: 'auto' }}
             />

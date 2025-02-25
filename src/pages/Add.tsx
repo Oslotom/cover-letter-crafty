@@ -27,6 +27,7 @@ export default function Add() {
   "title": "Job Title Here",
   "company": "Company Name Here",
   "deadline": "Application Deadline Here"
+  "summary": "Summary of description"
 }
 
 Job posting:

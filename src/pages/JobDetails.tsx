@@ -120,7 +120,7 @@ const JobDetails = () => {
 
           <div className="space-y-6">
             <div className="whitespace-pre-wrap text-foreground">
-              {jobContent}
+              {jobInfo.summary}
             </div>
 
             <div className="flex justify-between items-center pt-6">
