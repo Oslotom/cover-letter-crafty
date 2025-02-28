@@ -11,33 +11,48 @@ export type Database = {
     Tables: {
       applications: {
         Row: {
+          company: string | null
           cover_letter: string | null
           created_at: string
           cv_content: string | null
+          deadline: string | null
           id: string
           job_description: string | null
           job_title: string | null
           job_url: string | null
+          resume_file_name: string | null
+          resume_file_url: string | null
+          status: Database["public"]["Enums"]["application_status"] | null
           user_id: string | null
         }
         Insert: {
+          company?: string | null
           cover_letter?: string | null
           created_at?: string
           cv_content?: string | null
+          deadline?: string | null
           id?: string
           job_description?: string | null
           job_title?: string | null
           job_url?: string | null
+          resume_file_name?: string | null
+          resume_file_url?: string | null
+          status?: Database["public"]["Enums"]["application_status"] | null
           user_id?: string | null
         }
         Update: {
+          company?: string | null
           cover_letter?: string | null
           created_at?: string
           cv_content?: string | null
+          deadline?: string | null
           id?: string
           job_description?: string | null
           job_title?: string | null
           job_url?: string | null
+          resume_file_name?: string | null
+          resume_file_url?: string | null
+          status?: Database["public"]["Enums"]["application_status"] | null
           user_id?: string | null
         }
         Relationships: []
@@ -75,6 +90,36 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          created_at: string
+          file_size: number | null
+          id: string
+          resume_content: string | null
+          resume_file_name: string | null
+          resume_file_url: string | null
+          upload_date: string | null
+        }
+        Insert: {
+          created_at?: string
+          file_size?: number | null
+          id: string
+          resume_content?: string | null
+          resume_file_name?: string | null
+          resume_file_url?: string | null
+          upload_date?: string | null
+        }
+        Update: {
+          created_at?: string
+          file_size?: number | null
+          id?: string
+          resume_content?: string | null
+          resume_file_name?: string | null
+          resume_file_url?: string | null
+          upload_date?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -83,7 +128,12 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      application_status:
+        | "Wishlist"
+        | "Applied"
+        | "Interview"
+        | "Offer"
+        | "Rejected"
     }
     CompositeTypes: {
       [_ in never]: never
